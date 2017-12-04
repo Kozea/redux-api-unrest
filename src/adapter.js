@@ -1,3 +1,8 @@
+// This import may or may not be a good idea.
+// It's needed but can be included by your app.
+// eslint-disable-next-line no-unused-vars
+import regeneratorRuntime from 'regenerator-runtime'
+
 const storage = typeof localStorage == 'undefined' ? null : localStorage
 
 const removeTrailingSlash = url => {
