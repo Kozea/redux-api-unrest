@@ -1,6 +1,6 @@
 {
   "name": "redux-api-unrest",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Redux-api adapter and transformer for use with unrest.",
   "main": "lib/index.js",
   "repository": "https://github.com/Kozea/redux-api-unrest",
