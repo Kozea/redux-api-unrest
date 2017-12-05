@@ -9,9 +9,15 @@
   "scripts": {
     "build": "babel src --out-dir lib",
     "lint": "eslint src",
+    "test": "jest",
     "prepublish": "npm run build"
   },
-  "pre-commit": "lint",
+  "pre-commit": "lint,test",
+  "jest": {
+    "transform": {
+      ".js$": "babel-7-jest"
+    }
+  },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.34",
     "@babel/core": "^7.0.0-beta.34",
@@ -28,6 +34,8 @@
     "react-redux": "^5.0.6",
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^4.0.8",
+    "babel-7-jest": "^21.3.1",
+    "jest": "^21.2.1",
     "redux": "^3.7.2"
   },
   "files": [

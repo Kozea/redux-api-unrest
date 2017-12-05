@@ -5,7 +5,7 @@ import regeneratorRuntime from 'regenerator-runtime'
 
 const storage = typeof localStorage == 'undefined' ? null : localStorage
 
-const removeTrailingSlash = url => {
+export const removeTrailingSlash = url => {
   const [path, search] = url.split('?', 2)
   if (search) {
     return [path.replace(/\/+$/, ''), search].join('?')
