@@ -17,16 +17,23 @@ export default class UnrestApi {
   constructor(
     routes,
     // The following prefix must be the redux mount point to use cache
-    prefix = 'api',
-    rootPath = '',
-    cache = null,
-    handleJWT = false
+    options
   ) {
-    this.prefix = prefix
-    this.rootPath = rootPath
-    this.cache = cache
+    // Set default options
+    options = {
+      prefix: 'api',
+      rootPath: '',
+      cache: null,
+      handleJWT: false,
+      ...options,
+    }
+    this.prefix = options.prefix
+    this.rootPath = options.rootPath
+    this.cache = options.cache
     this.storage =
-      handleJWT && typeof localStorage !== 'undefined' ? localStorage : null
+      options.handleJWT && typeof localStorage !== 'undefined'
+        ? localStorage
+        : null
 
     this.events = this._getEvents(routes)
     this.actions = this._getActions(routes)
