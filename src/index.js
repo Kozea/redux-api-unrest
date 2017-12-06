@@ -12,12 +12,19 @@ const initialEndpointState = {
   error: null,
   lastFetch: null,
 }
-const storage = typeof localStorage == 'undefined' ? null : localStorage
 
 export default class UnrestApi {
-  constructor(routes, prefix = 'api', rootPath = '', handleJWT = false) {
+  constructor(
+    routes,
+    // The following prefix must be the redux mount point to use cache
+    prefix = 'api',
+    rootPath = '',
+    cache = null,
+    handleJWT = false
+  ) {
     this.prefix = prefix
     this.rootPath = rootPath
+    this.cache = cache
     this.storage =
       handleJWT && typeof localStorage !== 'undefined' ? localStorage : null
 
@@ -30,9 +37,10 @@ export default class UnrestApi {
     return Object.keys(routes).reduce((events, endpoint) => {
       const eventPath = `${rootPrefix}/${this.prefix}/${endpoint}`
       events[endpoint] = {
-        fetch: `${eventPath}/fetch`,
-        success: `${eventPath}/success`,
-        error: `${eventPath}/error`,
+        fetch: `${eventPath}/FETCH`,
+        success: `${eventPath}/SUCCESS`,
+        error: `${eventPath}/ERROR`,
+        cache: `${eventPath}/CACHE`,
       }
       return events
     }, {})
@@ -78,13 +86,18 @@ export default class UnrestApi {
               metadata: action.metadata,
               loading: false,
               error: null,
-              lastFetch: Date.now(),
+              lastFetch: action.method === 'get' ? Date.now() : state.lastFetch,
             }
           case this.events[endpoint].error:
             return {
               ...state,
               loading: false,
               error: action.error,
+            }
+          case this.events[endpoint].cache:
+            return {
+              ...state,
+              loading: false,
             }
           default:
             return state
@@ -126,8 +139,15 @@ export default class UnrestApi {
   }
 
   _fetchThunk(endpoint, url, urlParameters, method, payload) {
-    return async dispatch => {
+    return async (dispatch, getState) => {
       dispatch({ type: this.events[endpoint].fetch })
+      if (this.cache && method === 'get') {
+        const { lastFetch } = getState()[this.prefix][endpoint]
+        if (lastFetch && Date.now() - lastFetch < this.cache) {
+          dispatch({ type: this.events[endpoint].cache })
+          return
+        }
+      }
       try {
         const { objects, ...metadata } = await this._fetchHandler(
           url,
@@ -143,7 +163,10 @@ export default class UnrestApi {
           urlParameters,
         })
       } catch (error) {
-        dispatch({ type: this.events[endpoint].error, error: error.toString() })
+        dispatch({
+          type: this.events[endpoint].error,
+          error: error.toString(),
+        })
         throw error // ?
       }
     }
@@ -197,7 +220,7 @@ export default class UnrestApi {
   // eslint-disable-next-line no-unused-vars
   _onAfterFetchHook({ url, opts }, response) {
     if (this.storage) {
-      if (response.status === 401 && storage) {
+      if (response.status === 401) {
         this.storage.removeItem('jwt')
       }
       if (response.headers.get('Authorization')) {
