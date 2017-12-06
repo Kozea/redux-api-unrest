@@ -127,6 +127,7 @@ export default class UnrestApi {
 
   _fetchThunk(endpoint, url, urlParameters, method, payload) {
     return async dispatch => {
+      dispatch({ type: this.events[endpoint].fetch })
       try {
         const { objects, ...metadata } = await this._fetchHandler(
           url,
@@ -142,7 +143,7 @@ export default class UnrestApi {
           urlParameters,
         })
       } catch (error) {
-        dispatch({ type: this.events[endpoint].error, error })
+        dispatch({ type: this.events[endpoint].error, error: error.toString() })
         throw error // ?
       }
     }

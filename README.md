@@ -1,3 +1,3 @@
 # redux-api-unrest
 
-Redux-api adapter and transformer for use with unrest.
+A redux reducer for unrest.

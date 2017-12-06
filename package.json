@@ -1,7 +1,7 @@
 {
   "name": "redux-api-unrest",
   "version": "0.0.5",
-  "description": "Redux-api adapter and transformer for use with unrest.",
+  "description": "A redux reducer for unrest.",
   "main": "lib/index.js",
   "repository": "https://github.com/Kozea/redux-api-unrest",
   "author": "Florian Mounier",
@@ -31,12 +31,7 @@
     "eslint-plugin-react": "^7.5.1",
     "import-sort-style-module": "^4.2.0",
     "jest": "^21.2.1",
-    "pre-commit": "^1.2.2",
-    "react": "^16.2.0",
-    "react-redux": "^5.0.6",
-    "react-router-dom": "^4.2.2",
-    "react-router-redux": "^4.0.8",
-    "redux": "^3.7.2"
+    "pre-commit": "^1.2.2"
   },
   "files": [
     "lib/"
