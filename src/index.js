@@ -1,4 +1,208 @@
-export { crud, DEFAULT_METHODS } from './helpers'
-export { defaults, withDefaults } from './options'
-export adapter from './adapter'
-export transformer from './transformer'
+import fetch from 'isomorphic-fetch'
+import { compile } from 'path-to-regexp'
+// eslint-disable-next-line no-unused-vars
+import regeneratorRuntime from 'regenerator-runtime'
+
+const rootPrefix = '@@api-unrest'
+const methods = ['get', 'put', 'post', 'patch', 'delete']
+const initialEndpointState = {
+  objects: [],
+  metadata: {},
+  loading: false,
+  error: null,
+  lastFetch: null,
+}
+const storage = typeof localStorage == 'undefined' ? null : localStorage
+
+export default class UnrestApi {
+  constructor(routes, prefix = 'api', rootPath = '', handleJWT = false) {
+    this.prefix = prefix
+    this.rootPath = rootPath
+    this.storage =
+      handleJWT && typeof localStorage !== 'undefined' ? localStorage : null
+
+    this.events = this._getEvents(routes)
+    this.actions = this._getActions(routes)
+    this.reducers = this._getReducers(routes)
+  }
+
+  _getEvents(routes) {
+    return Object.keys(routes).reduce((events, endpoint) => {
+      const eventPath = `${rootPrefix}/${this.prefix}/${endpoint}`
+      events[endpoint] = {
+        fetch: `${eventPath}/fetch`,
+        success: `${eventPath}/success`,
+        error: `${eventPath}/error`,
+      }
+      return events
+    }, {})
+  }
+
+  _getActions(routes) {
+    // For each routes return a map: endpoint -> methods -> thunk -> fetch
+    return Object.entries(routes).reduce((actions, [endpoint, path]) => {
+      const url = compile(`${this.rootPath}/${path}`)
+      actions[endpoint] = methods.reduce((routeActions, method) => {
+        routeActions[method] = (urlParameters, payload) =>
+          this._fetchThunk(endpoint, url, urlParameters, method, payload)
+        if (method !== 'GET') {
+          routeActions[`${method}All`] = payload =>
+            routeActions[method]({}, payload)
+        }
+        return routeActions
+      }, {})
+      return actions
+    }, {})
+  }
+
+  _getReducers(routes) {
+    return Object.keys(routes).reduce((reducers, endpoint) => {
+      reducers[endpoint] = (state = initialEndpointState, action) => {
+        switch (action.type) {
+          case this.events[endpoint].fetch:
+            return {
+              ...state,
+              loading: true,
+              error: null,
+            }
+          case this.events[endpoint].success:
+            return {
+              ...state,
+              objects: this._mergeObjects(
+                action.method,
+                state.objects,
+                action.objects,
+                action.metadata.primary_keys,
+                action.urlParameters
+              ),
+              metadata: action.metadata,
+              loading: false,
+              error: null,
+              lastFetch: Date.now(),
+            }
+          case this.events[endpoint].error:
+            return {
+              ...state,
+              loading: false,
+              error: action.error,
+            }
+          default:
+            return state
+        }
+      }
+      return reducers
+    }, {})
+  }
+
+  _mergeObjects(method, olds, objects, pks, urlParameters) {
+    // An equality based on primary keys
+    const pkEqual = (o1, o2) => pks.every(pk => o1[pk] === o2[pk])
+    // A filter that only returns objects that are not in the given list
+    const notIn = objs => obj => !objs.some(o => pkEqual(o, obj))
+    switch (method) {
+      case 'get':
+        // In case of a GET we simply use the new objects
+        return [...objects]
+      case 'post':
+        // In case of a POST we concatenate the new data to the old
+        return [...olds, ...objects]
+      case 'put':
+        // In case of a PUT we replace all if it's a batch
+        if (!Object.keys(urlParameters).length) {
+          // If there's no path variables it's a batch PUT so
+          return [...objects]
+        }
+      // In case of a PUT one we replace the one that changed
+      // Since it's exactly like PATCH we are falling through
+      // eslint-disable-next-line no-fallthrough
+      case 'patch':
+        // In case of a PATCH we replace the element that changed
+        // Old objects without the updated new objects + the new objects
+        return [...olds.filter(notIn(objects)), ...objects]
+      case 'delete':
+        // In case of a DELETE we remove all
+        return [...olds.filter(notIn(objects))]
+    }
+  }
+
+  _fetchThunk(endpoint, url, urlParameters, method, payload) {
+    return async dispatch => {
+      try {
+        const { objects, ...metadata } = await this._fetchHandler(
+          url,
+          urlParameters,
+          method,
+          payload
+        )
+        dispatch({
+          type: this.events[endpoint].success,
+          objects,
+          metadata,
+          method,
+          urlParameters,
+        })
+      } catch (error) {
+        dispatch({ type: this.events[endpoint].error, error })
+        throw error // ?
+      }
+    }
+  }
+
+  async _fetchHandler(url, urlParameters, method, payload) {
+    const opts = {
+      method,
+      headers: {
+        Accept: 'application/json',
+      },
+    }
+    if (payload) {
+      opts.headers['Content-Type'] = 'application/json'
+      opts.body = JSON.stringify(payload)
+    }
+    const response = await this._fetch(url(urlParameters), opts)
+    if (response.status > 300 || response.status < 200) {
+      // TODO: find a better solution. UNREST ?
+      if (response.status === 404 && opts.method === 'GET') {
+        return { occurences: 0, objects: [] }
+      }
+      if (response.headers.get('Content-Type') !== 'application/json') {
+        const text = await response.text()
+        throw new Error(`[${response.status}] - ${text}`)
+      }
+      const json = await response.json()
+      throw new Error(
+        `[${response.status}] - ${json.message || json.description || json}`
+      )
+    }
+    return response.json()
+  }
+
+  _onBeforeFetchHook({ url, opts }) {
+    if (this.storage) {
+      const jwt = this.storage.getItem('jwt')
+      if (jwt) {
+        opts.headers.Authorization = `Bearer ${jwt}`
+      }
+    }
+    return { url, opts }
+  }
+
+  async _fetch(url, opts) {
+    const hookParams = this._onBeforeFetchHook({ url, opts })
+    const response = await fetch(hookParams.url, hookParams.opts)
+    return this._onAfterFetchHook(hookParams, response)
+  }
+
+  // eslint-disable-next-line no-unused-vars
+  _onAfterFetchHook({ url, opts }, response) {
+    if (this.storage) {
+      if (response.status === 401 && storage) {
+        this.storage.removeItem('jwt')
+      }
+      if (response.headers.get('Authorization')) {
+        this.storage.setItem('jwt', response.headers.get('Authorization'))
+      }
+    }
+    return response
+  }
+}
