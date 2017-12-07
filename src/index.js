@@ -200,7 +200,7 @@ export default class ApiUnrest {
     const response = await this._fetch(url(urlParameters), opts)
     if (response.status > 300 || response.status < 200) {
       // TODO: find a better solution. UNREST ?
-      if (response.status === 404 && opts.method === 'GET') {
+      if (response.status === 404 && opts.method === 'get') {
         return { occurences: 0, objects: [] }
       }
       if (response.headers.get('Content-Type') !== 'application/json') {

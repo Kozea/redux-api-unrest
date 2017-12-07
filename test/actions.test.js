@@ -60,6 +60,9 @@ describe('Actions of api-unrest', () => {
           await timeout(25)
           return {
             status: 200,
+            headers: {
+              get: key => ({ 'Content-Type': 'application/json' }[key]),
+            },
             // eslint-disable-next-line require-await
             json: async () => ({
               objects: [{ url, ...opts }],
@@ -154,5 +157,78 @@ describe('Actions of api-unrest', () => {
         expect(actionHistory[1].urlParameters).toEqual({})
       })
     )
+  })
+  describe('Handles http errors with json', () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        fetch: async () => {
+          await timeout(25)
+          return {
+            status: 500,
+            headers: {
+              get: key => ({ 'Content-Type': 'application/json' }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              message: 'This is the error',
+            }),
+          }
+        },
+      }
+    )
+    it('returns the error', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch)
+          : actionHistory.push(action)
+      try {
+        await fakeDispatch(api.actions.color.get())
+      } catch (err) {
+        expect(err.toString()).toEqual('Error: [500] - This is the error')
+      }
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.error)
+      expect(actionHistory[1].error).toEqual('Error: [500] - This is the error')
+    })
+  })
+  describe('Handles 404 as no occurrence', () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        fetch: async () => {
+          await timeout(25)
+          return {
+            status: 404,
+            headers: {
+              get: key => ({ 'Content-Type': 'application/json' }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({}),
+          }
+        },
+      }
+    )
+    it('does not crash and returns 0 occurence', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch)
+          : actionHistory.push(action)
+      await fakeDispatch(api.actions.color.get())
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.success)
+      expect(actionHistory[1].objects).toEqual([])
+      expect(actionHistory[1].metadata.occurences).toEqual(0)
+    })
   })
 })
