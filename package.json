@@ -9,7 +9,8 @@
   "scripts": {
     "build": "babel src --out-dir lib",
     "lint": "eslint src",
-    "test": "jest",
+    "test": "jest --coverage",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "prepublish": "npm run build"
   },
   "pre-commit": "lint,test",
@@ -21,7 +22,6 @@
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.34",
     "@babel/core": "^7.0.0-beta.34",
-    "@babel/plugin-proposal-export-default-from": "^7.0.0-beta.34",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.34",
     "@babel/preset-env": "^7.0.0-beta.34",
     "babel-7-jest": "^21.3.1",

@@ -13,7 +13,7 @@ const initialEndpointState = {
   lastFetch: null,
 }
 
-export default class UnrestApi {
+export default class ApiUnrest {
   constructor(
     routes,
     // The following prefix must be the redux mount point to use cache
@@ -25,6 +25,7 @@ export default class UnrestApi {
       rootPath: '',
       cache: null,
       handleJWT: false,
+      fetch,
       ...options,
     }
     this.prefix = options.prefix
@@ -34,6 +35,7 @@ export default class UnrestApi {
       options.handleJWT && typeof localStorage !== 'undefined'
         ? localStorage
         : null
+    this.fetch = options.fetch
 
     this.events = this._getEvents(routes)
     this.actions = this._getActions(routes)
@@ -60,7 +62,7 @@ export default class UnrestApi {
       actions[endpoint] = methods.reduce((routeActions, method) => {
         routeActions[method] = (urlParameters, payload) =>
           this._fetchThunk(endpoint, url, urlParameters, method, payload)
-        if (method !== 'GET') {
+        if (method !== 'get') {
           routeActions[`${method}All`] = payload =>
             routeActions[method]({}, payload)
         }
@@ -220,7 +222,7 @@ export default class UnrestApi {
 
   async _fetch(url, opts) {
     const hookParams = this._onBeforeFetchHook({ url, opts })
-    const response = await fetch(hookParams.url, hookParams.opts)
+    const response = await this.fetch(hookParams.url, hookParams.opts)
     return this._onAfterFetchHook(hookParams, response)
   }
 
