@@ -3,6 +3,18 @@ import thunk from 'redux-thunk'
 
 import ApiUnrest from '../src'
 
+const init = (objects = []) => ({
+  objects,
+  metadata: {
+    occurences: objects.length,
+    primary_keys: ['id'],
+  },
+  loading: false,
+  error: null,
+  lastFetch: null,
+  lastFetchParams: null,
+})
+
 describe('Api unrest reducers', () => {
   it('generates all the reducers', () => {
     const api = new ApiUnrest({
@@ -43,7 +55,7 @@ describe('Api unrest reducers', () => {
     )
   })
 
-  it('reduces correctly items', () => {
+  it('initializes correctly the store', () => {
     const api = new ApiUnrest({
       fruit: 'fruit',
       color: 'base/color/:id?',
@@ -51,6 +63,7 @@ describe('Api unrest reducers', () => {
     })
     const reducer = combineReducers(api.reducers)
     const store = createStore(reducer, applyMiddleware(thunk))
+
     expect(Object.keys(store.getState())).toEqual(['fruit', 'color', 'tree'])
     expect(store.getState().fruit).toEqual({
       objects: [],
@@ -60,14 +73,24 @@ describe('Api unrest reducers', () => {
       loading: false,
       metadata: {},
     })
+  })
+  it('fills correctly the store on get', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(reducer, applyMiddleware(thunk))
+
     store.dispatch({
-      type: api.events.fruit.success,
-      objects: [{ o: 1 }, { o: 2 }],
-      metadata: { occurences: 2, primary_keys: ['o'] },
+      type: api.events.color.success,
+      objects: [{ id: 1, name: 'orange' }, { id: 2, name: 'yellow' }],
+      metadata: { occurences: 2, primary_keys: ['id'] },
       method: 'get',
       urlParameters: {},
     })
-    expect(Object.keys(store.getState().fruit)).toEqual([
+    expect(Object.keys(store.getState().color)).toEqual([
       'objects',
       'metadata',
       'loading',
@@ -75,12 +98,216 @@ describe('Api unrest reducers', () => {
       'lastFetch',
       'lastFetchParams',
     ])
-    expect(store.getState().fruit.objects).toEqual([{ o: 1 }, { o: 2 }])
+    expect(store.getState().color.objects).toEqual([
+      { id: 1, name: 'orange' },
+      { id: 2, name: 'yellow' },
+    ])
+    expect(store.getState().color.error).toBeNull()
+    expect(store.getState().color.lastFetch).not.toBeNull()
+    expect(store.getState().color.lastFetchParams).toEqual({})
+    expect(store.getState().color.loading).toEqual(false)
+    expect(store.getState().color.metadata.occurences).toEqual(2)
+    expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
+  })
+
+  it('fills correctly the store on another get', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(
+      reducer,
+      {
+        fruit: init([{ id: 1, name: 'orange' }, { id: 2, name: 'yellow' }]),
+        color: init(),
+        tree: init(),
+      },
+      applyMiddleware(thunk)
+    )
+
+    store.dispatch({
+      type: api.events.color.success,
+      objects: [{ id: 4, name: 'blue' }, { id: 2, name: 'green' }],
+      metadata: { occurences: 2, primary_keys: ['id'] },
+      method: 'get',
+      urlParameters: {},
+    })
+    expect(Object.keys(store.getState().color)).toEqual([
+      'objects',
+      'metadata',
+      'loading',
+      'error',
+      'lastFetch',
+      'lastFetchParams',
+    ])
+    expect(store.getState().color.objects).toEqual([
+      { id: 4, name: 'blue' },
+      { id: 2, name: 'green' },
+    ])
+    expect(store.getState().color.error).toBeNull()
+    expect(store.getState().color.lastFetch).not.toBeNull()
+    expect(store.getState().color.lastFetchParams).toEqual({})
+    expect(store.getState().color.loading).toEqual(false)
+    expect(store.getState().color.metadata.occurences).toEqual(2)
+    expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
+  })
+
+  it('fills correctly the store on a get with id', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(
+      reducer,
+      {
+        fruit: init([{ id: 1, name: 'orange' }, { id: 2, name: 'yellow' }]),
+        color: init(),
+        tree: init(),
+      },
+      applyMiddleware(thunk)
+    )
+
+    store.dispatch({
+      type: api.events.color.success,
+      objects: [{ id: 4, name: 'blue' }],
+      metadata: { occurences: 1, primary_keys: ['id'] },
+      method: 'get',
+      urlParameters: { id: 4 },
+    })
+    expect(Object.keys(store.getState().color)).toEqual([
+      'objects',
+      'metadata',
+      'loading',
+      'error',
+      'lastFetch',
+      'lastFetchParams',
+    ])
+    expect(store.getState().color.objects).toEqual([{ id: 4, name: 'blue' }])
+    expect(store.getState().color.error).toBeNull()
+    expect(store.getState().color.lastFetch).not.toBeNull()
+    expect(store.getState().color.lastFetchParams).toEqual({ id: 4 })
+    expect(store.getState().color.loading).toEqual(false)
+    expect(store.getState().color.metadata.occurences).toEqual(1)
+    expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
+  })
+
+  it('fill correctly the store on post with id', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(
+      reducer,
+      {
+        fruit: init([{ id: 4, name: 'blue' }, { id: 2, name: 'green' }]),
+        color: init(),
+        tree: init(),
+      },
+      applyMiddleware(thunk)
+    )
+
+    store.dispatch({
+      type: api.events.fruit.success,
+      objects: [{ id: 5, name: 'pink' }],
+      metadata: { occurences: 1, primary_keys: ['id'] },
+      method: 'post',
+      urlParameters: { id: 5 },
+    })
+    expect(store.getState().fruit.objects).toEqual([
+      { id: 4, name: 'blue' },
+      { id: 2, name: 'green' },
+      { id: 5, name: 'pink' },
+    ])
     expect(store.getState().fruit.error).toBeNull()
-    expect(store.getState().fruit.lastFetch).not.toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toEqual({})
+    expect(store.getState().fruit.lastFetch).toBeNull()
+    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.loading).toEqual(false)
+    expect(store.getState().fruit.metadata.occurences).toEqual(1)
+    expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
+  })
+  it('fill correctly the store on put without id', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(
+      reducer,
+      {
+        fruit: init([
+          { id: 4, name: 'blue' },
+          { id: 2, name: 'green' },
+          { id: 5, name: 'pink' },
+        ]),
+        color: init(),
+        tree: init(),
+      },
+      applyMiddleware(thunk)
+    )
+
+    store.dispatch({
+      type: api.events.fruit.success,
+      objects: [{ id: 9, name: 'purple' }, { id: 8, name: 'orangered' }],
+      metadata: { occurences: 2, primary_keys: ['id'] },
+      method: 'put',
+      urlParameters: {},
+    })
+    expect(store.getState().fruit.objects).toEqual([
+      { id: 9, name: 'purple' },
+      { id: 8, name: 'orangered' },
+    ])
+    expect(store.getState().fruit.error).toBeNull()
+    expect(store.getState().fruit.lastFetch).toBeNull()
+    expect(store.getState().fruit.lastFetchParams).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(2)
-    expect(store.getState().fruit.metadata.primary_keys).toEqual(['o'])
+    expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
+  })
+  it('fill correctly the store on put with id', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(
+      reducer,
+      {
+        fruit: init([
+          { id: 4, name: 'blue' },
+          { id: 2, name: 'green' },
+          { id: 5, name: 'pink' },
+        ]),
+        color: init(),
+        tree: init(),
+      },
+      applyMiddleware(thunk)
+    )
+
+    store.dispatch({
+      type: api.events.fruit.success,
+      objects: [{ id: 2, name: 'forestgreen' }],
+      metadata: { occurences: 1, primary_keys: ['id'] },
+      method: 'put',
+      urlParameters: { id: 2 },
+    })
+    expect(store.getState().fruit.objects).toEqual([
+      { id: 4, name: 'blue' },
+      { id: 5, name: 'pink' },
+      { id: 2, name: 'forestgreen' },
+    ])
+    expect(store.getState().fruit.error).toBeNull()
+    expect(store.getState().fruit.lastFetch).toBeNull()
+    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.loading).toEqual(false)
+    expect(store.getState().fruit.metadata.occurences).toEqual(1)
+    expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
   })
 })

@@ -62,7 +62,7 @@ export default class ApiUnrest {
       const url = compile(`${this.rootPath}/${path}`)
       actions[endpoint] = methods.reduce((routeActions, method) => {
         routeActions[method] = (urlParameters, payload) =>
-          this._fetchThunk(endpoint, url, urlParameters, method, payload)
+          this._fetchThunk(endpoint, url, urlParameters || {}, method, payload)
         if (method !== 'get') {
           routeActions[`${method}All`] = payload =>
             routeActions[method](void 0, payload)

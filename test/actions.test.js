@@ -86,7 +86,7 @@ describe('Actions of api-unrest', () => {
       expect(actionHistory[1].objects[0].headers.Accept).toEqual(
         'application/json'
       )
-      expect(actionHistory[1].urlParameters).toBeUndefined()
+      expect(actionHistory[1].urlParameters).toEqual({})
     })
 
     it('calls fetch with the right method and params with params', async () => {
@@ -151,7 +151,7 @@ describe('Actions of api-unrest', () => {
         expect(actionHistory[1].objects[0].headers.Accept).toEqual(
           'application/json'
         )
-        expect(actionHistory[1].urlParameters).toBeUndefined()
+        expect(actionHistory[1].urlParameters).toEqual({})
       })
     )
   })
