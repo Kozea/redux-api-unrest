@@ -11,6 +11,7 @@ const initialEndpointState = {
   loading: false,
   error: null,
   lastFetch: null,
+  lastFetchParams: null,
 }
 
 export default class ApiUnrest {
@@ -64,7 +65,7 @@ export default class ApiUnrest {
           this._fetchThunk(endpoint, url, urlParameters, method, payload)
         if (method !== 'get') {
           routeActions[`${method}All`] = payload =>
-            routeActions[method]({}, payload)
+            routeActions[method](void 0, payload)
         }
         return routeActions
       }, {})
@@ -96,6 +97,10 @@ export default class ApiUnrest {
               loading: false,
               error: null,
               lastFetch: action.method === 'get' ? Date.now() : state.lastFetch,
+              lastFetchParams:
+                action.method === 'get'
+                  ? action.urlParameters
+                  : state.lastFetchParams,
             }
           case this.events[endpoint].error:
             return {

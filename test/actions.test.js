@@ -4,12 +4,12 @@ import regeneratorRuntime from 'regenerator-runtime'
 import ApiUnrest from '../src'
 import { timeout } from './utils'
 
-describe('Actions api generation', () => {
+describe('Actions of api-unrest', () => {
   describe('is exhaustive', () => {
     const api = new ApiUnrest({
       fruit: 'fruit',
       color: 'base/color/:id?',
-      tree: 'forest/tree/:size?/:age?',
+      tree: 'forest/tree/:type?/:age?',
     })
     ;[('fruit', 'color', 'tree')].map(endpoint =>
       it(`generates all for ${endpoint}`, () => {
@@ -34,7 +34,7 @@ describe('Actions api generation', () => {
       {
         fruit: 'fruit',
         color: 'base/color/:id?',
-        tree: 'forest/tree/:size?/:age?',
+        tree: 'forest/tree/:type?/:age?',
       },
       { rootPath: 'http://kozea.fr/api' } // This does not exists
     )
@@ -48,12 +48,12 @@ describe('Actions api generation', () => {
     dispatched.catch(() => ({}))
     expect(actionHistory[0].type).toEqual(api.events.color.fetch)
   })
-  describe('actions with fetch', () => {
+  describe('with fetch', () => {
     const api = new ApiUnrest(
       {
         fruit: 'fruit',
         color: 'base/color/:id?',
-        tree: 'forest/tree/:size?/:age?',
+        tree: 'forest/tree/:type?/:age?',
       },
       {
         fetch: async (url, opts) => {
@@ -70,7 +70,7 @@ describe('Actions api generation', () => {
       }
     )
 
-    it('calls fetch with the right method', async () => {
+    it('calls fetch with the right method and params', async () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
@@ -88,5 +88,71 @@ describe('Actions api generation', () => {
       )
       expect(actionHistory[1].urlParameters).toBeUndefined()
     })
+
+    it('calls fetch with the right method and params with params', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch)
+          : actionHistory.push(action)
+      await fakeDispatch(api.actions.color.get({ id: 4 }, { newObject: true }))
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.success)
+      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
+      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].url).toEqual('/base/color/4')
+      expect(actionHistory[1].objects[0].headers.Accept).toEqual(
+        'application/json'
+      )
+      expect(actionHistory[1].urlParameters).toEqual({ id: 4 })
+    })
+    ;['post', 'put', 'patch', 'delete'].map(method =>
+      it(`calls fetch for ${method} with the right params / body`, async () => {
+        const actionHistory = []
+        const fakeDispatch = action =>
+          typeof action === 'function'
+            ? action(fakeDispatch)
+            : actionHistory.push(action)
+        await fakeDispatch(
+          api.actions.tree[method]({ type: 'pine', age: 42 }, { object: 2 })
+        )
+        expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
+        expect(actionHistory[1].type).toEqual(api.events.tree.success)
+        expect(actionHistory[1].method).toEqual(method)
+        expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
+        expect(actionHistory[1].objects[0].method).toEqual(method)
+        expect(actionHistory[1].objects[0].body).toEqual('{"object":2}')
+        expect(actionHistory[1].objects[0].url).toEqual('/forest/tree/pine/42')
+        expect(actionHistory[1].objects[0].headers.Accept).toEqual(
+          'application/json'
+        )
+        expect(actionHistory[1].urlParameters).toEqual({
+          type: 'pine',
+          age: 42,
+        })
+      })
+    )
+    ;['post', 'put', 'patch', 'delete'].map(method =>
+      it(`calls fetch for ${method} with the right params / body`, async () => {
+        const actionHistory = []
+        const fakeDispatch = action =>
+          typeof action === 'function'
+            ? action(fakeDispatch)
+            : actionHistory.push(action)
+        await fakeDispatch(api.actions.tree[`${method}All`]({ object: 2 }))
+        expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
+        expect(actionHistory[1].type).toEqual(api.events.tree.success)
+        expect(actionHistory[1].method).toEqual(method)
+        expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
+        expect(actionHistory[1].objects[0].method).toEqual(method)
+        expect(actionHistory[1].objects[0].body).toEqual('{"object":2}')
+        expect(actionHistory[1].objects[0].url).toEqual('/forest/tree')
+        expect(actionHistory[1].objects[0].headers.Accept).toEqual(
+          'application/json'
+        )
+        expect(actionHistory[1].urlParameters).toBeUndefined()
+      })
+    )
   })
 })

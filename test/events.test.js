@@ -1,7 +1,7 @@
 import ApiUnrest from '../src'
 
-describe('It generates correctly the events', () => {
-  it('For a basic example', () => {
+describe('Api-unrest events generation', () => {
+  it('generates all of them for a basic example', () => {
     const api = new ApiUnrest({
       fruit: 'fruit',
       color: 'base/color/:id?',
@@ -26,7 +26,7 @@ describe('It generates correctly the events', () => {
       success: '@@api-unrest/api/tree/SUCCESS',
     })
   })
-  it('With another rootPrefix', () => {
+  it('takes in account the prefix', () => {
     const api = new ApiUnrest(
       {
         fruit: 'fruit',
