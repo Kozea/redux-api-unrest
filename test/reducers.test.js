@@ -12,7 +12,7 @@ const init = (objects = []) => ({
   loading: false,
   error: null,
   lastFetch: null,
-  lastFetchParams: null,
+  lastFetchParameters: null,
 })
 
 describe('Api unrest reducers', () => {
@@ -48,7 +48,7 @@ describe('Api unrest reducers', () => {
         objects: [],
         error: null,
         lastFetch: null,
-        lastFetchParams: null,
+        lastFetchParameters: null,
         loading: false,
         metadata: {},
       })
@@ -69,7 +69,7 @@ describe('Api unrest reducers', () => {
       objects: [],
       error: null,
       lastFetch: null,
-      lastFetchParams: null,
+      lastFetchParameters: null,
       loading: false,
       metadata: {},
     })
@@ -97,7 +97,7 @@ describe('Api unrest reducers', () => {
       'loading',
       'error',
       'lastFetch',
-      'lastFetchParams',
+      'lastFetchParameters',
     ])
     expect(store.getState().color.objects).toEqual([
       { id: 1, name: 'orange' },
@@ -105,7 +105,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().color.error).toBeNull()
     expect(store.getState().color.lastFetch).not.toBeNull()
-    expect(store.getState().color.lastFetchParams).toEqual({})
+    expect(store.getState().color.lastFetchParameters).toEqual({})
     expect(store.getState().color.loading).toEqual(false)
     expect(store.getState().color.metadata.occurences).toEqual(2)
     expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
@@ -141,7 +141,7 @@ describe('Api unrest reducers', () => {
       'loading',
       'error',
       'lastFetch',
-      'lastFetchParams',
+      'lastFetchParameters',
     ])
     expect(store.getState().color.objects).toEqual([
       { id: 4, name: 'blue' },
@@ -149,7 +149,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().color.error).toBeNull()
     expect(store.getState().color.lastFetch).not.toBeNull()
-    expect(store.getState().color.lastFetchParams).toEqual({})
+    expect(store.getState().color.lastFetchParameters).toEqual({})
     expect(store.getState().color.loading).toEqual(false)
     expect(store.getState().color.metadata.occurences).toEqual(2)
     expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
@@ -185,12 +185,12 @@ describe('Api unrest reducers', () => {
       'loading',
       'error',
       'lastFetch',
-      'lastFetchParams',
+      'lastFetchParameters',
     ])
     expect(store.getState().color.objects).toEqual([{ id: 4, name: 'blue' }])
     expect(store.getState().color.error).toBeNull()
     expect(store.getState().color.lastFetch).not.toBeNull()
-    expect(store.getState().color.lastFetchParams).toEqual({ id: 4 })
+    expect(store.getState().color.lastFetchParameters).toEqual({ id: 4 })
     expect(store.getState().color.loading).toEqual(false)
     expect(store.getState().color.metadata.occurences).toEqual(1)
     expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
@@ -227,7 +227,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(1)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
@@ -266,7 +266,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(2)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
@@ -306,7 +306,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(1)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
@@ -346,7 +346,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(2)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
@@ -386,7 +386,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(1)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
@@ -426,7 +426,7 @@ describe('Api unrest reducers', () => {
     expect(store.getState().fruit.objects).toEqual([])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(3)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
@@ -465,7 +465,7 @@ describe('Api unrest reducers', () => {
     ])
     expect(store.getState().fruit.error).toBeNull()
     expect(store.getState().fruit.lastFetch).toBeNull()
-    expect(store.getState().fruit.lastFetchParams).toBeNull()
+    expect(store.getState().fruit.lastFetchParameters).toBeNull()
     expect(store.getState().fruit.loading).toEqual(false)
     expect(store.getState().fruit.metadata.occurences).toEqual(1)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])

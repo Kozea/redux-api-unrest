@@ -1,3 +1,4 @@
+import deepEqual from 'deep-equal'
 import fetch from 'isomorphic-fetch'
 import { compile } from 'path-to-regexp'
 // eslint-disable-next-line no-unused-vars
@@ -11,7 +12,7 @@ const initialEndpointState = {
   loading: false,
   error: null,
   lastFetch: null,
-  lastFetchParams: null,
+  lastFetchParameters: null,
 }
 
 export default class ApiUnrest {
@@ -103,10 +104,10 @@ export default class ApiUnrest {
               loading: false,
               error: null,
               lastFetch: action.method === 'get' ? Date.now() : state.lastFetch,
-              lastFetchParams:
+              lastFetchParameters:
                 action.method === 'get'
                   ? action.urlParameters
-                  : state.lastFetchParams,
+                  : state.lastFetchParameters,
             }
           case this.events[endpoint].error:
             return {
@@ -162,8 +163,15 @@ export default class ApiUnrest {
     return async (dispatch, getState) => {
       dispatch({ type: this.events[endpoint].fetch })
       if (this.cache && method === 'get') {
-        const { lastFetch } = getState()[this.prefix][endpoint]
-        if (lastFetch && Date.now() - lastFetch < this.cache) {
+        const { lastFetch, lastFetchParameters } = getState()[this.prefix][
+          endpoint
+        ]
+        if (
+          lastFetch &&
+          Date.now() - lastFetch < this.cache &&
+          (lastFetchParameters === null ||
+            deepEqual(lastFetchParameters, urlParameters))
+        ) {
           dispatch({ type: this.events[endpoint].cache })
           return
         }
