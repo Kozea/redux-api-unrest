@@ -240,7 +240,7 @@ describe('Actions of api-unrest', () => {
       )
     })
   })
-  describe('Handles 404 as no occurrence', () => {
+  describe('Handles 404', () => {
     const api = new ApiUnrest(
       {
         fruit: 'fruit',
@@ -256,12 +256,54 @@ describe('Actions of api-unrest', () => {
               get: key => ({ 'Content-Type': 'application/json' }[key]),
             },
             // eslint-disable-next-line require-await
-            json: async () => ({}),
+            json: async () => ({
+              message: 'whatever',
+            }),
           }
         },
       }
     )
-    it('does not crash and returns 0 occurence', async () => {
+    it('does raise like an error', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch)
+          : actionHistory.push(action)
+      try {
+        await fakeDispatch(api.actions.color.get())
+      } catch (err) {
+        expect(err.toString()).toEqual('HttpError: [404] - whatever')
+      }
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.error)
+      expect(actionHistory[1].error).toEqual('HttpError: [404] - whatever')
+    })
+  })
+  describe('Handles 404 as no occurrence if it is an empty response', () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        fetch: async () => {
+          await timeout(25)
+          return {
+            status: 404,
+            headers: {
+              get: key => ({ 'Content-Type': 'application/json' }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              occurences: 0,
+              objects: [],
+            }),
+          }
+        },
+      }
+    )
+    it('does not raise and returns 0 occurence', async () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'

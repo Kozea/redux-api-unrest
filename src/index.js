@@ -239,14 +239,14 @@ export default class ApiUnrest {
     }
     const response = await this._fetch(url(urlParameters), opts)
     if (response.status > 300 || response.status < 200) {
-      if (response.status === 404 && opts.method === 'get') {
-        return { occurences: 0, objects: [] }
-      }
       if (response.headers.get('Content-Type') !== 'application/json') {
         const text = await response.text()
         throw httpError(response.status, text)
       }
       const json = await response.json()
+      if (response.status === 404 && json.occurences === 0) {
+        return json
+      }
       throw httpError(
         response.status,
         json.message || json.description || JSON.stringify(json)
