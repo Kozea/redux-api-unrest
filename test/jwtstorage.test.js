@@ -50,6 +50,48 @@ describe('Api unrest can handle JWT', () => {
       'Bearer JWTTOKEN'
     )
   })
+  it('does not send token if there is no token', async () => {
+    const storage = {
+      getItem: name => storage[name],
+      setItem: (name, value) => (storage[name] = value),
+      removeItem: name => delete storage[name],
+    }
+
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        JWTStorage: storage,
+        fetch: async (url, opts) => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: [{ headers: opts.headers }],
+            }),
+          }
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+    await store.dispatch(api.actions.color.get())
+    expect(
+      store.getState().color.objects[0].headers.Authorization
+    ).toBeUndefined()
+  })
   it('sets the token on fetch response', async () => {
     const storage = {
       getItem: name => storage[name],
