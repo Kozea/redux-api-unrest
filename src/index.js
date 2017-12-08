@@ -25,17 +25,23 @@ export default class ApiUnrest {
       prefix: 'api',
       rootPath: '',
       cache: null,
-      handleJWT: false,
+      JWTStorage: false,
       fetch,
       ...options,
     }
     this.prefix = options.prefix
     this.rootPath = options.rootPath
     this.cache = options.cache
-    this.storage =
-      options.handleJWT && typeof localStorage !== 'undefined'
-        ? localStorage
-        : null
+    this.storage = null
+    if (options.JWTStorage) {
+      if (options.JWTStorage === true) {
+        if (typeof localStorage !== 'undefined') {
+          this.storage = localStorage
+        }
+      } else {
+        this.storage = options.JWTStorage
+      }
+    }
     this.fetch = options.fetch
 
     this.events = this._getEvents(routes)
@@ -199,7 +205,6 @@ export default class ApiUnrest {
     }
     const response = await this._fetch(url(urlParameters), opts)
     if (response.status > 300 || response.status < 200) {
-      // TODO: find a better solution. UNREST ?
       if (response.status === 404 && opts.method === 'get') {
         return { occurences: 0, objects: [] }
       }
@@ -209,7 +214,9 @@ export default class ApiUnrest {
       }
       const json = await response.json()
       throw new Error(
-        `[${response.status}] - ${json.message || json.description || json}`
+        `[${response.status}] - ${json.message ||
+          json.description ||
+          JSON.stringify(json)}`
       )
     }
     return response.json()
@@ -236,8 +243,7 @@ export default class ApiUnrest {
     if (this.storage) {
       if (response.status === 401) {
         this.storage.removeItem('jwt')
-      }
-      if (response.headers.get('Authorization')) {
+      } else if (response.headers.get('Authorization')) {
         this.storage.setItem('jwt', response.headers.get('Authorization'))
       }
     }
