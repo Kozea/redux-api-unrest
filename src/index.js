@@ -183,7 +183,7 @@ export default class ApiUnrest {
             deepEqual(lastFetchParameters, urlParameters))
         ) {
           dispatch({ type: this.events[endpoint].cache })
-          return
+          return true
         }
       }
       try {
@@ -200,6 +200,7 @@ export default class ApiUnrest {
           method,
           urlParameters,
         })
+        return true
       } catch (error) {
         dispatch({
           type: this.events[endpoint].error,
@@ -222,6 +223,7 @@ export default class ApiUnrest {
         ) {
           throw error
         }
+        return false
       }
     }
   }

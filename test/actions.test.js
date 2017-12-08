@@ -79,7 +79,8 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch)
           : actionHistory.push(action)
-      await fakeDispatch(api.actions.color.get())
+      const hasSucceded = await fakeDispatch(api.actions.color.get())
+      expect(hasSucceded).toBeTruthy()
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('get')
@@ -345,7 +346,8 @@ describe('Actions of api-unrest', () => {
           ? action(fakeDispatch)
           : actionHistory.push(action)
 
-      await fakeDispatch(api.actions.color.get())
+      const hasSucceded = await fakeDispatch(api.actions.color.get())
+      expect(hasSucceded).toBeFalsy()
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
