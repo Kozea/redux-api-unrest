@@ -1,12 +1,12 @@
 import { applyMiddleware, combineReducers, createStore } from 'redux'
 import thunk from 'redux-thunk'
+// eslint-disable-next-line no-unused-vars
 import regeneratorRuntime from 'regenerator-runtime'
 
 import ApiUnrest from '../src'
-// eslint-disable-next-line no-unused-vars
 import { timeout } from './utils'
 
-describe('Handles jwt', () => {
+describe('Api unrest can handle JWT', () => {
   it('sends the token on fetch request', async () => {
     const storage = {
       getItem: name => storage[name],
@@ -123,5 +123,15 @@ describe('Handles jwt', () => {
       expect()
     }
     expect(storage.jwt).toBeUndefined()
+  })
+  it('uses the localStorage if available', () => {
+    global.localStorage = { iam: 'localStorage' }
+    const api = new ApiUnrest({}, { JWTStorage: true })
+    delete global.localStorage
+    expect(api.storage).toEqual({ iam: 'localStorage' })
+  })
+  it('do nothing if the localStorage is unavailable', () => {
+    const api = new ApiUnrest({}, { JWTStorage: true })
+    expect(api.storage).toBeNull()
   })
 })

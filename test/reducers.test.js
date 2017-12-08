@@ -74,6 +74,7 @@ describe('Api unrest reducers', () => {
       metadata: {},
     })
   })
+
   it('fills correctly the store on get', () => {
     const api = new ApiUnrest({
       fruit: 'fruit',
