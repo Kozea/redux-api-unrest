@@ -190,11 +190,13 @@ describe('Actions of api-unrest', () => {
       try {
         await fakeDispatch(api.actions.color.get())
       } catch (err) {
-        expect(err.toString()).toEqual('Error: [500] - This is the error')
+        expect(err.toString()).toEqual('HttpError: [500] - This is the error')
       }
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
-      expect(actionHistory[1].error).toEqual('Error: [500] - This is the error')
+      expect(actionHistory[1].error).toEqual(
+        'HttpError: [500] - This is the error'
+      )
     })
   })
   describe('Handles http errors with text', () => {
@@ -227,12 +229,14 @@ describe('Actions of api-unrest', () => {
       try {
         await fakeDispatch(api.actions.color.get())
       } catch (err) {
-        expect(err.toString()).toEqual('Error: [500] - This is the text error')
+        expect(err.toString()).toEqual(
+          'HttpError: [500] - This is the text error'
+        )
       }
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
-        'Error: [500] - This is the text error'
+        'HttpError: [500] - This is the text error'
       )
     })
   })
@@ -268,6 +272,86 @@ describe('Actions of api-unrest', () => {
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].objects).toEqual([])
       expect(actionHistory[1].metadata.occurences).toEqual(0)
+    })
+  })
+  describe('Error handler', () => {
+    it('respects the return value', async () => {
+      const api = new ApiUnrest(
+        {
+          fruit: 'fruit',
+          color: 'base/color/:id?',
+          tree: 'forest/tree/:type?/:age?',
+        },
+        {
+          fetch: async () => {
+            await timeout(25)
+            return {
+              status: 500,
+              headers: {
+                get: key => ({ 'Content-Type': 'text/plain' }[key]),
+              },
+              // eslint-disable-next-line require-await
+              text: async () => 'This is the text error',
+            }
+          },
+          errorHandler: () => false,
+        }
+      )
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch)
+          : actionHistory.push(action)
+
+      await fakeDispatch(api.actions.color.get())
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.error)
+      expect(actionHistory[1].error).toEqual(
+        'HttpError: [500] - This is the text error'
+      )
+    })
+
+    it('sets the correct parameters', async () => {
+      const dispatchMarker = () => ({})
+      const getStateMarker = () => ({})
+      const api = new ApiUnrest(
+        {
+          fruit: 'fruit',
+          color: 'base/color/:id?',
+          tree: 'forest/tree/:type?/:age?',
+        },
+        {
+          fetch: async () => {
+            await timeout(25)
+            return {
+              status: 500,
+              headers: {
+                get: key => ({ 'Content-Type': 'text/plain' }[key]),
+              },
+              // eslint-disable-next-line require-await
+              text: async () => 'This is the text error',
+            }
+          },
+          errorHandler: (
+            error,
+            { endpoint, url, urlParameters, method, payload },
+            dispatch,
+            getState
+          ) => {
+            expect(error.name).toEqual('HttpError')
+            expect(error.code).toEqual(500)
+            expect(endpoint).toEqual('color')
+            expect(url).toEqual('/base/color')
+            expect(urlParameters).toEqual({})
+            expect(method).toEqual('get')
+            expect(payload).toBeUndefined()
+            expect(dispatch).toEqual(dispatchMarker)
+            expect(getState).toEqual(getStateMarker)
+            return false
+          },
+        }
+      )
+      await api.actions.color.get()(dispatchMarker, getStateMarker)
     })
   })
 })

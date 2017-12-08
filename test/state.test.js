@@ -86,6 +86,6 @@ describe('Api unrest update the state when fetching', () => {
       expect(err).toBeTruthy()
     }
     expect(store.getState().color.loading).toBeFalsy()
-    expect(store.getState().color.error).toEqual('Error: [500] - error')
+    expect(store.getState().color.error).toEqual('HttpError: [500] - error')
   })
 })

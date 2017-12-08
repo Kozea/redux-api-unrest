@@ -15,6 +15,14 @@ const initialEndpointState = {
   lastFetchParameters: null,
 }
 
+const httpError = (code, description) => {
+  const error = new Error(`[${code}] - ${description}`)
+  error.name = 'HttpError'
+  error.code = code
+  error.description = description
+  return error
+}
+
 export default class ApiUnrest {
   constructor(
     routes,
@@ -27,6 +35,7 @@ export default class ApiUnrest {
       rootPath: '',
       cache: null,
       JWTStorage: false,
+      errorHandler: () => true,
       fetch,
       ...options,
     }
@@ -34,6 +43,7 @@ export default class ApiUnrest {
     this.rootPath = options.rootPath
     this.cache = options.cache
     this.storage = null
+    this.errorHandler = options.errorHandler
     if (options.JWTStorage) {
       if (options.JWTStorage === true) {
         if (typeof localStorage !== 'undefined') {
@@ -195,7 +205,23 @@ export default class ApiUnrest {
           type: this.events[endpoint].error,
           error: error.toString(),
         })
-        throw error // ?
+        // If errro handler returns true, the error will propagate
+        if (
+          this.errorHandler(
+            error,
+            {
+              endpoint,
+              url: url(urlParameters),
+              urlParameters,
+              method,
+              payload,
+            },
+            dispatch,
+            getState
+          )
+        ) {
+          throw error
+        }
       }
     }
   }
@@ -218,13 +244,12 @@ export default class ApiUnrest {
       }
       if (response.headers.get('Content-Type') !== 'application/json') {
         const text = await response.text()
-        throw new Error(`[${response.status}] - ${text}`)
+        throw httpError(response.status, text)
       }
       const json = await response.json()
-      throw new Error(
-        `[${response.status}] - ${json.message ||
-          json.description ||
-          JSON.stringify(json)}`
+      throw httpError(
+        response.status,
+        json.message || json.description || JSON.stringify(json)
       )
     }
     return response.json()
