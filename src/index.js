@@ -173,11 +173,38 @@ export default class ApiUnrest {
 
   _fetchThunk(endpoint, url, urlParameters, method, payload) {
     return async (dispatch, getState) => {
+      const handleError = error => {
+        // If error handler returns true, the error will propagate
+        if (
+          this.errorHandler(
+            error,
+            {
+              endpoint,
+              url: url(urlParameters),
+              urlParameters,
+              method,
+              payload,
+            },
+            dispatch,
+            getState
+          )
+        ) {
+          throw error
+        }
+      }
+      const state = getState()
+      const { loading } = this.apiRoot(state)[endpoint]
+      if (loading) {
+        // Waiting for AbortController api
+        // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
+        const arlreadyLoadingError = new Error('Already loading')
+        arlreadyLoadingError.name = 'AlreadyLoadingError'
+        handleError(arlreadyLoadingError)
+        return false
+      }
       dispatch({ type: this.events[endpoint].fetch })
       if (this.cache && method === 'get') {
-        const { lastFetch, lastFetchParameters } = this.apiRoot(getState())[
-          endpoint
-        ]
+        const { lastFetch, lastFetchParameters } = this.apiRoot(state)[endpoint]
         if (
           lastFetch &&
           Date.now() - lastFetch < this.cache &&
@@ -208,23 +235,7 @@ export default class ApiUnrest {
           type: this.events[endpoint].error,
           error: error.toString(),
         })
-        // If errro handler returns true, the error will propagate
-        if (
-          this.errorHandler(
-            error,
-            {
-              endpoint,
-              url: url(urlParameters),
-              urlParameters,
-              method,
-              payload,
-            },
-            dispatch,
-            getState
-          )
-        ) {
-          throw error
-        }
+        handleError(error)
         return false
       }
     }

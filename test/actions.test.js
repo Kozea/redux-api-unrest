@@ -5,6 +5,13 @@ import ApiUnrest from '../src'
 import { timeout } from './utils'
 
 describe('Actions of api-unrest', () => {
+  const fakeGetState = () => ({
+    api: {
+      color: { loading: false },
+      tree: { loading: false },
+      pine: { loading: false },
+    },
+  })
   describe('is exhaustive', () => {
     const api = new ApiUnrest({
       fruit: 'fruit',
@@ -39,11 +46,8 @@ describe('Actions of api-unrest', () => {
       { rootPath: 'http://kozea.fr/api' } // This does not exists
     )
     const actionHistory = []
-    const fakeDispatch = action =>
-      typeof action === 'function'
-        ? action(fakeDispatch)
-        : actionHistory.push(action)
-    const dispatched = api.actions.color.get()(fakeDispatch)
+    const fakeDispatch = action => actionHistory.push(action)
+    const dispatched = api.actions.color.get()(fakeDispatch, fakeGetState)
     expect(dispatched.constructor.name).toEqual('Promise')
     dispatched.catch(() => ({}))
     expect(actionHistory[0].type).toEqual(api.events.color.fetch)
@@ -77,7 +81,7 @@ describe('Actions of api-unrest', () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
-          ? action(fakeDispatch)
+          ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       const hasSucceded = await fakeDispatch(api.actions.color.get())
       expect(hasSucceded).toBeTruthy()
@@ -92,31 +96,12 @@ describe('Actions of api-unrest', () => {
       )
       expect(actionHistory[1].urlParameters).toEqual({})
     })
-
-    it('calls fetch with the right method and params with params', async () => {
-      const actionHistory = []
-      const fakeDispatch = action =>
-        typeof action === 'function'
-          ? action(fakeDispatch)
-          : actionHistory.push(action)
-      await fakeDispatch(api.actions.color.get({ id: 4 }, { newObject: true }))
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
-      expect(actionHistory[1].type).toEqual(api.events.color.success)
-      expect(actionHistory[1].method).toEqual('get')
-      expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-      expect(actionHistory[1].objects[0].method).toEqual('get')
-      expect(actionHistory[1].objects[0].url).toEqual('/base/color/4')
-      expect(actionHistory[1].objects[0].headers.Accept).toEqual(
-        'application/json'
-      )
-      expect(actionHistory[1].urlParameters).toEqual({ id: 4 })
-    })
     ;['post', 'put', 'patch', 'delete'].map(method =>
       it(`calls fetch for ${method} with the right params / body`, async () => {
         const actionHistory = []
         const fakeDispatch = action =>
           typeof action === 'function'
-            ? action(fakeDispatch)
+            ? action(fakeDispatch, fakeGetState)
             : actionHistory.push(action)
         await fakeDispatch(
           api.actions.tree[method]({ type: 'pine', age: 42 }, { object: 2 })
@@ -142,7 +127,7 @@ describe('Actions of api-unrest', () => {
         const actionHistory = []
         const fakeDispatch = action =>
           typeof action === 'function'
-            ? action(fakeDispatch)
+            ? action(fakeDispatch, fakeGetState)
             : actionHistory.push(action)
         await fakeDispatch(api.actions.tree[`${method}All`]({ object: 2 }))
         expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
@@ -186,7 +171,7 @@ describe('Actions of api-unrest', () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
-          ? action(fakeDispatch)
+          ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       try {
         await fakeDispatch(api.actions.color.get())
@@ -225,7 +210,7 @@ describe('Actions of api-unrest', () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
-          ? action(fakeDispatch)
+          ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       try {
         await fakeDispatch(api.actions.color.get())
@@ -268,7 +253,7 @@ describe('Actions of api-unrest', () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
-          ? action(fakeDispatch)
+          ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       try {
         await fakeDispatch(api.actions.color.get())
@@ -308,7 +293,7 @@ describe('Actions of api-unrest', () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
-          ? action(fakeDispatch)
+          ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       await fakeDispatch(api.actions.color.get())
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
@@ -343,7 +328,7 @@ describe('Actions of api-unrest', () => {
       const actionHistory = []
       const fakeDispatch = action =>
         typeof action === 'function'
-          ? action(fakeDispatch)
+          ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
 
       const hasSucceded = await fakeDispatch(api.actions.color.get())
@@ -357,7 +342,7 @@ describe('Actions of api-unrest', () => {
 
     it('sets the correct parameters', async () => {
       const dispatchMarker = () => ({})
-      const getStateMarker = () => ({})
+      const getStateMarker = () => fakeGetState()
       const api = new ApiUnrest(
         {
           fruit: 'fruit',

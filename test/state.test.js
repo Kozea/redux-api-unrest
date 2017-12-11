@@ -15,6 +15,7 @@ describe('Api unrest update the state when fetching', () => {
         tree: 'forest/tree/:type?/:age?',
       },
       {
+        apiRoot: state => state,
         fetch: async () => {
           await timeout(25)
           return {
@@ -54,6 +55,7 @@ describe('Api unrest update the state when fetching', () => {
         tree: 'forest/tree/:type?/:age?',
       },
       {
+        apiRoot: state => state,
         fetch: async () => {
           await timeout(25)
           return {
@@ -87,5 +89,84 @@ describe('Api unrest update the state when fetching', () => {
     }
     expect(store.getState().color.loading).toBeFalsy()
     expect(store.getState().color.error).toEqual('HttpError: [500] - error')
+  })
+  it('throws an error on concurrent requests', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        apiRoot: state => state,
+        fetch: async () => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: ['data'],
+            }),
+          }
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+
+    try {
+      await Promise.all([
+        store.dispatch(api.actions.color.get()),
+        store.dispatch(api.actions.color.get()),
+      ])
+    } catch (err) {
+      expect(err.name).toEqual('AlreadyLoadingError')
+    }
+  })
+  it('still success on first request on concurrent requests', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        apiRoot: state => state,
+        errorHandler: () => false,
+        fetch: async () => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: ['data'],
+            }),
+          }
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+    await Promise.all([
+      store.dispatch(api.actions.color.get()),
+      store.dispatch(api.actions.color.get()),
+    ])
+    expect(store.getState().color.objects).toEqual(['data'])
   })
 })

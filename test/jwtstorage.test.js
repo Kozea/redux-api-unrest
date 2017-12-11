@@ -23,6 +23,7 @@ describe('Api unrest can handle JWT', () => {
       },
       {
         JWTStorage: storage,
+        apiRoot: state => state,
         fetch: async (url, opts) => {
           await timeout(25)
           return {
@@ -65,6 +66,7 @@ describe('Api unrest can handle JWT', () => {
       },
       {
         JWTStorage: storage,
+        apiRoot: state => state,
         fetch: async (url, opts) => {
           await timeout(25)
           return {
@@ -124,7 +126,10 @@ describe('Api unrest can handle JWT', () => {
         },
       }
     )
-    await api.actions.color.get()(() => ({}))
+    await api.actions.color.get()(
+      () => ({}),
+      () => ({ api: { color: { loading: false } } })
+    )
     expect(storage.jwt).toEqual('JWTTOKEN')
   })
   it('removes the token on a 401', async () => {
@@ -160,7 +165,10 @@ describe('Api unrest can handle JWT', () => {
       }
     )
     try {
-      await api.actions.color.get()(() => ({}))
+      await api.actions.color.get()(
+        () => ({}),
+        () => ({ api: { color: { loading: false } } })
+      )
     } catch (err) {
       expect()
     }
