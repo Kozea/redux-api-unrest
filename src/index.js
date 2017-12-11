@@ -36,6 +36,7 @@ export default class ApiUnrest {
       cache: null,
       JWTStorage: false,
       errorHandler: () => true,
+      apiRoot: state => state[this.prefix],
       fetch,
       ...options,
     }
@@ -43,6 +44,7 @@ export default class ApiUnrest {
     this.rootPath = options.rootPath
     this.cache = options.cache
     this.storage = null
+    this.apiRoot = options.apiRoot
     this.errorHandler = options.errorHandler
     if (options.JWTStorage) {
       if (options.JWTStorage === true) {
@@ -173,7 +175,7 @@ export default class ApiUnrest {
     return async (dispatch, getState) => {
       dispatch({ type: this.events[endpoint].fetch })
       if (this.cache && method === 'get') {
-        const { lastFetch, lastFetchParameters } = getState()[this.prefix][
+        const { lastFetch, lastFetchParameters } = this.apiRoot(getState())[
           endpoint
         ]
         if (
