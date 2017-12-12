@@ -5,7 +5,7 @@ import queryString from 'query-string'
 // eslint-disable-next-line no-unused-vars
 import regeneratorRuntime from 'regenerator-runtime'
 
-import { isEmpty } from '../test/utils'
+import { isEmpty } from './utils'
 
 export const apiUnrestPrefix = '@@api-unrest'
 export const methods = ['get', 'put', 'post', 'patch', 'delete']
