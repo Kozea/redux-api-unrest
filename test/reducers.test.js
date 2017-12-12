@@ -89,7 +89,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 1, name: 'orange' }, { id: 2, name: 'yellow' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
       method: 'get',
-      urlParameters: {},
+      parameters: {},
+      batch: true,
     })
     expect(Object.keys(store.getState().color)).toEqual([
       'objects',
@@ -133,7 +134,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 4, name: 'blue' }, { id: 2, name: 'green' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
       method: 'get',
-      urlParameters: {},
+      parameters: {},
+      batch: true,
     })
     expect(Object.keys(store.getState().color)).toEqual([
       'objects',
@@ -177,7 +179,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 4, name: 'blue' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
       method: 'get',
-      urlParameters: { id: 4 },
+      parameters: { id: 4 },
+      batch: false,
     })
     expect(Object.keys(store.getState().color)).toEqual([
       'objects',
@@ -218,7 +221,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 5, name: 'pink' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
       method: 'post',
-      urlParameters: { id: 5 },
+      parameters: { id: 5 },
+      batch: false,
     })
     expect(store.getState().fruit.objects).toEqual([
       { id: 4, name: 'blue' },
@@ -258,7 +262,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 9, name: 'purple' }, { id: 8, name: 'orangered' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
       method: 'put',
-      urlParameters: {},
+      parameters: {},
+      batch: true,
     })
     expect(store.getState().fruit.objects).toEqual([
       { id: 9, name: 'purple' },
@@ -297,7 +302,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 2, name: 'forestgreen' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
       method: 'put',
-      urlParameters: { id: 2 },
+      parameters: { id: 2 },
+      batch: false,
     })
     expect(store.getState().fruit.objects).toEqual([
       { id: 4, name: 'blue' },
@@ -337,7 +343,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 4, name: 'indigo' }, { id: 5, name: 'cream' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
       method: 'patch',
-      urlParameters: {},
+      parameters: {},
+      batch: true,
     })
     expect(store.getState().fruit.objects).toEqual([
       { id: 2, name: 'green' },
@@ -377,7 +384,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 2, name: 'forestgreen' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
       method: 'patch',
-      urlParameters: { id: 2 },
+      parameters: { id: 2 },
+      batch: false,
     })
     expect(store.getState().fruit.objects).toEqual([
       { id: 4, name: 'blue' },
@@ -421,7 +429,8 @@ describe('Api unrest reducers', () => {
       ],
       metadata: { occurences: 3, primary_keys: ['id'] },
       method: 'delete',
-      urlParameters: {},
+      parameters: {},
+      batch: true,
     })
     expect(store.getState().fruit.objects).toEqual([])
     expect(store.getState().fruit.error).toBeNull()
@@ -457,7 +466,8 @@ describe('Api unrest reducers', () => {
       objects: [{ id: 2, name: 'forestgreen' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
       method: 'delete',
-      urlParameters: { id: 2 },
+      parameters: { id: 2 },
+      batch: false,
     })
     expect(store.getState().fruit.objects).toEqual([
       { id: 4, name: 'blue' },

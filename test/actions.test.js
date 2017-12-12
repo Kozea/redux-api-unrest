@@ -20,18 +20,12 @@ describe('Actions of api-unrest', () => {
     })
     ;[('fruit', 'color', 'tree')].map(endpoint =>
       it(`generates all for ${endpoint}`, () => {
-        ;[
-          'get',
-          'post',
-          'put',
-          'patch',
-          'delete',
-          'postAll',
-          'putAll',
-          'patchAll',
-          'deleteAll',
-        ].map(method =>
-          expect(Object.keys(api.actions[endpoint])).toContain(method)
+        ;['', 'All'].map(suffix =>
+          ['get', 'post', 'put', 'patch', 'delete'].map(method =>
+            expect(Object.keys(api.actions[endpoint])).toContain(
+              method + suffix
+            )
+          )
         )
       })
     )
@@ -94,7 +88,61 @@ describe('Actions of api-unrest', () => {
       expect(actionHistory[1].objects[0].headers.Accept).toEqual(
         'application/json'
       )
-      expect(actionHistory[1].urlParameters).toEqual({})
+      expect(actionHistory[1].parameters).toEqual({})
+    })
+
+    it('calls fetch with query string when payload and get', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch, fakeGetState)
+          : actionHistory.push(action)
+      const hasSucceded = await fakeDispatch(
+        api.actions.color.getAll({ offset: 0, limit: 50 })
+      )
+      expect(hasSucceded).toBeTruthy()
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.success)
+      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
+      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].url).toEqual(
+        '/base/color?limit=50&offset=0'
+      )
+      expect(actionHistory[1].batch).toBeTruthy()
+      expect(actionHistory[1].objects[0].headers.Accept).toEqual(
+        'application/json'
+      )
+      expect(actionHistory[1].parameters).toEqual({ offset: 0, limit: 50 })
+    })
+
+    it('calls fetch with query string and parameters', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch, fakeGetState)
+          : actionHistory.push(action)
+      const hasSucceded = await fakeDispatch(
+        api.actions.color.get({ id: 5 }, { offset: 0, limit: 50 })
+      )
+      expect(hasSucceded).toBeTruthy()
+      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.color.success)
+      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
+      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].url).toEqual(
+        '/base/color/5?limit=50&offset=0'
+      )
+      expect(actionHistory[1].objects[0].headers.Accept).toEqual(
+        'application/json'
+      )
+      expect(actionHistory[1].batch).toBeFalsy()
+      expect(actionHistory[1].parameters).toEqual({
+        id: 5,
+        offset: 0,
+        limit: 50,
+      })
     })
     ;['post', 'put', 'patch', 'delete'].map(method =>
       it(`calls fetch for ${method} with the right params / body`, async () => {
@@ -116,7 +164,7 @@ describe('Actions of api-unrest', () => {
         expect(actionHistory[1].objects[0].headers.Accept).toEqual(
           'application/json'
         )
-        expect(actionHistory[1].urlParameters).toEqual({
+        expect(actionHistory[1].parameters).toEqual({
           type: 'pine',
           age: 42,
         })
@@ -140,7 +188,7 @@ describe('Actions of api-unrest', () => {
         expect(actionHistory[1].objects[0].headers.Accept).toEqual(
           'application/json'
         )
-        expect(actionHistory[1].urlParameters).toEqual({})
+        expect(actionHistory[1].parameters).toEqual({})
       })
     )
   })
@@ -373,7 +421,7 @@ describe('Actions of api-unrest', () => {
             expect(url).toEqual('/base/color')
             expect(urlParameters).toEqual({})
             expect(method).toEqual('get')
-            expect(payload).toBeUndefined()
+            expect(payload).toEqual({})
             expect(dispatch).toEqual(dispatchMarker)
             expect(getState).toEqual(getStateMarker)
             return false

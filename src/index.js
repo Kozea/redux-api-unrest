@@ -1,8 +1,11 @@
 import deepEqual from 'deep-equal'
 import fetch from 'isomorphic-fetch'
 import { compile } from 'path-to-regexp'
+import queryString from 'query-string'
 // eslint-disable-next-line no-unused-vars
 import regeneratorRuntime from 'regenerator-runtime'
+
+import { isEmpty } from '../test/utils'
 
 export const apiUnrestPrefix = '@@api-unrest'
 export const methods = ['get', 'put', 'post', 'patch', 'delete']
@@ -78,14 +81,18 @@ export default class ApiUnrest {
   _getActions(routes) {
     // For each routes return a map: endpoint -> methods -> thunk -> fetch
     return Object.entries(routes).reduce((actions, [endpoint, path]) => {
-      const url = compile(`${this.rootPath}/${path}`)
+      const urlFormatter = compile(`${this.rootPath}/${path}`)
       actions[endpoint] = methods.reduce((routeActions, method) => {
-        routeActions[method] = (urlParameters, payload) =>
-          this._fetchThunk(endpoint, url, urlParameters || {}, method, payload)
-        if (method !== 'get') {
-          routeActions[`${method}All`] = payload =>
-            routeActions[method](void 0, payload)
-        }
+        routeActions[method] = (urlParameters = {}, payload = {}) =>
+          this._fetchThunk(
+            endpoint,
+            urlFormatter,
+            urlParameters,
+            method,
+            payload
+          )
+        routeActions[`${method}All`] = payload =>
+          routeActions[method](void 0, payload)
         return routeActions
       }, {})
       return actions
@@ -110,7 +117,7 @@ export default class ApiUnrest {
                 state.objects,
                 action.objects,
                 action.metadata.primary_keys,
-                action.urlParameters
+                action.batch
               ),
               metadata: action.metadata,
               loading: false,
@@ -118,7 +125,7 @@ export default class ApiUnrest {
               lastFetch: action.method === 'get' ? Date.now() : state.lastFetch,
               lastFetchParameters:
                 action.method === 'get'
-                  ? action.urlParameters
+                  ? action.parameters
                   : state.lastFetchParameters,
             }
           case this.events[endpoint].error:
@@ -140,7 +147,7 @@ export default class ApiUnrest {
     }, {})
   }
 
-  _mergeObjects(method, olds, objects, pks, urlParameters) {
+  _mergeObjects(method, olds, objects, pks, batch) {
     // An equality based on primary keys
     const pkEqual = (o1, o2) => pks.every(pk => o1[pk] === o2[pk])
     // A filter that only returns objects that are not in the given list
@@ -154,7 +161,7 @@ export default class ApiUnrest {
         return [...olds, ...objects]
       case 'put':
         // In case of a PUT we replace all if it's a batch
-        if (!Object.keys(urlParameters).length) {
+        if (batch) {
           // If there's no path variables it's a batch PUT so
           return [...objects]
         }
@@ -171,8 +178,17 @@ export default class ApiUnrest {
     }
   }
 
-  _fetchThunk(endpoint, url, urlParameters, method, payload) {
+  _fetchThunk(endpoint, urlFormatter, urlParameters, method, payload) {
     return async (dispatch, getState) => {
+      const query =
+        method === 'get' && !isEmpty(payload)
+          ? `?${queryString.stringify(payload)}`
+          : ''
+      const url = urlFormatter(urlParameters) + query
+      // In case of a get request, add get parameters to parameters
+      // (This prevents cache on different url queries: ?offset=0 vs ?offset=10)
+      const parameters =
+        method === 'get' ? { ...urlParameters, ...payload } : urlParameters
       const handleError = error => {
         // If error handler returns true, the error will propagate
         if (
@@ -180,7 +196,7 @@ export default class ApiUnrest {
             error,
             {
               endpoint,
-              url: url(urlParameters),
+              url,
               urlParameters,
               method,
               payload,
@@ -203,6 +219,7 @@ export default class ApiUnrest {
         handleError(arlreadyLoadingError)
         return false
       }
+      // Here we go
       dispatch({ type: this.events[endpoint].fetch })
       if (this.cache && method === 'get') {
         const { lastFetch, lastFetchParameters } = this.apiRoot(state)[endpoint]
@@ -210,7 +227,7 @@ export default class ApiUnrest {
           lastFetch &&
           Date.now() - lastFetch < this.cache &&
           (lastFetchParameters === null ||
-            deepEqual(lastFetchParameters, urlParameters))
+            deepEqual(lastFetchParameters, parameters))
         ) {
           dispatch({ type: this.events[endpoint].cache })
           return true
@@ -219,7 +236,6 @@ export default class ApiUnrest {
       try {
         const { objects, ...metadata } = await this._fetchHandler(
           url,
-          urlParameters,
           method,
           payload
         )
@@ -228,7 +244,9 @@ export default class ApiUnrest {
           objects,
           metadata,
           method,
-          urlParameters,
+          parameters,
+          // This request was a batch if there were no url parameters
+          batch: isEmpty(urlParameters),
         })
         return true
       } catch (error) {
@@ -242,18 +260,18 @@ export default class ApiUnrest {
     }
   }
 
-  async _fetchHandler(url, urlParameters, method, payload) {
+  async _fetchHandler(url, method, payload) {
     const opts = {
       method,
       headers: {
         Accept: 'application/json',
       },
     }
-    if (payload) {
+    if (method !== 'get' && !isEmpty(payload)) {
       opts.headers['Content-Type'] = 'application/json'
       opts.body = JSON.stringify(payload)
     }
-    const response = await this._fetch(url(urlParameters), opts)
+    const response = await this._fetch(url, opts)
     if (response.status > 300 || response.status < 200) {
       if (response.headers.get('Content-Type') !== 'application/json') {
         const text = await response.text()

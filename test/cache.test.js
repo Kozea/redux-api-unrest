@@ -370,4 +370,110 @@ describe('Api unrest provides a cache', () => {
     expect(actionLog[2].type).toEqual(api.events.color.fetch)
     expect(actionLog[3].type).toEqual(api.events.color.cache)
   })
+
+  it('does not cache two equal parameters with different query', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        cache: 100,
+        fetch: async url => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: [url],
+            }),
+          }
+        },
+      }
+    )
+    const actionLog = []
+    const logMiddleware = () => next => action => {
+      actionLog.push(action)
+      return next(action)
+    }
+    const store = createStore(
+      combineReducers({ api: combineReducers(api.reducers) }),
+      applyMiddleware(thunk, logMiddleware)
+    )
+
+    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 0 }))
+    expect(store.getState().api.color.objects[0]).toEqual(
+      '/base/color/3?offset=0'
+    )
+
+    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 10 }))
+    expect(store.getState().api.color.objects[0]).toEqual(
+      '/base/color/3?offset=10'
+    )
+
+    expect(actionLog[0].type).toEqual(api.events.color.fetch)
+    expect(actionLog[1].type).toEqual(api.events.color.success)
+    expect(actionLog[2].type).toEqual(api.events.color.fetch)
+    expect(actionLog[3].type).toEqual(api.events.color.success)
+  })
+
+  it('does cache two equal parameters with equal query', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        cache: 100,
+        fetch: async url => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: [url],
+            }),
+          }
+        },
+      }
+    )
+    const actionLog = []
+    const logMiddleware = () => next => action => {
+      actionLog.push(action)
+      return next(action)
+    }
+    const store = createStore(
+      combineReducers({ api: combineReducers(api.reducers) }),
+      applyMiddleware(thunk, logMiddleware)
+    )
+
+    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 0 }))
+    expect(store.getState().api.color.objects[0]).toEqual(
+      '/base/color/3?offset=0'
+    )
+
+    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 0 }))
+    expect(store.getState().api.color.objects[0]).toEqual(
+      '/base/color/3?offset=0'
+    )
+
+    expect(actionLog[0].type).toEqual(api.events.color.fetch)
+    expect(actionLog[1].type).toEqual(api.events.color.success)
+    expect(actionLog[2].type).toEqual(api.events.color.fetch)
+    expect(actionLog[3].type).toEqual(api.events.color.cache)
+  })
 })
