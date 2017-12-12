@@ -20,7 +20,7 @@ describe('Actions of api-unrest', () => {
     })
     ;[('fruit', 'color', 'tree')].map(endpoint =>
       it(`generates all for ${endpoint}`, () => {
-        ;['', 'All'].map(suffix =>
+        ;['', 'Item'].map(suffix =>
           ['get', 'post', 'put', 'patch', 'delete'].map(method =>
             expect(Object.keys(api.actions[endpoint])).toContain(
               method + suffix
@@ -100,7 +100,7 @@ describe('Actions of api-unrest', () => {
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       const report = await fakeDispatch(
-        api.actions.color.getAll({ offset: 0, limit: 50 })
+        api.actions.color.get({ offset: 0, limit: 50 })
       )
       expect(report.status).toEqual('success')
       expect(report.objects).toEqual(actionHistory[1].objects)
@@ -127,7 +127,7 @@ describe('Actions of api-unrest', () => {
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       const report = await fakeDispatch(
-        api.actions.color.get({ id: 5 }, { offset: 0, limit: 50 })
+        api.actions.color.getItem({ id: 5 }, { offset: 0, limit: 50 })
       )
       expect(report.status).toEqual('success')
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
@@ -156,7 +156,10 @@ describe('Actions of api-unrest', () => {
             ? action(fakeDispatch, fakeGetState)
             : actionHistory.push(action)
         await fakeDispatch(
-          api.actions.tree[method]({ type: 'pine', age: 42 }, { object: 2 })
+          api.actions.tree[`${method}Item`](
+            { type: 'pine', age: 42 },
+            { object: 2 }
+          )
         )
         expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
         expect(actionHistory[1].type).toEqual(api.events.tree.success)
@@ -174,6 +177,24 @@ describe('Actions of api-unrest', () => {
         })
       })
     )
+    it('calls fetch for get with the right params / body', async () => {
+      const actionHistory = []
+      const fakeDispatch = action =>
+        typeof action === 'function'
+          ? action(fakeDispatch, fakeGetState)
+          : actionHistory.push(action)
+      await fakeDispatch(api.actions.tree.get({ object: 2 }))
+      expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
+      expect(actionHistory[1].type).toEqual(api.events.tree.success)
+      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
+      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].url).toEqual('/forest/tree?object=2')
+      expect(actionHistory[1].objects[0].headers.Accept).toEqual(
+        'application/json'
+      )
+      expect(actionHistory[1].parameters).toEqual({ object: 2 })
+    })
     ;['post', 'put', 'patch', 'delete'].map(method =>
       it(`calls fetch for ${method} with the right params / body`, async () => {
         const actionHistory = []
@@ -181,7 +202,7 @@ describe('Actions of api-unrest', () => {
           typeof action === 'function'
             ? action(fakeDispatch, fakeGetState)
             : actionHistory.push(action)
-        await fakeDispatch(api.actions.tree[`${method}All`]({ object: 2 }))
+        await fakeDispatch(api.actions.tree[method]({ object: 2 }))
         expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
         expect(actionHistory[1].type).toEqual(api.events.tree.success)
         expect(actionHistory[1].method).toEqual(method)
@@ -195,6 +216,11 @@ describe('Actions of api-unrest', () => {
         expect(actionHistory[1].parameters).toEqual({})
       })
     )
+    it('throws on a getItem without parameters', () => {
+      expect(() => api.actions.tree.getItem()).toThrowError(
+        'getItem on api.tree called without parameters'
+      )
+    })
   })
   describe('Handles http errors with json', () => {
     const api = new ApiUnrest(
@@ -225,11 +251,14 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
+      let catched = false
       try {
         await fakeDispatch(api.actions.color.get())
       } catch (err) {
         expect(err.toString()).toEqual('HttpError: [500] - This is the error')
+        catched = true
       }
+      expect(catched).toBeTruthy()
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
@@ -264,13 +293,16 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
+      let catched = false
       try {
         await fakeDispatch(api.actions.color.get())
       } catch (err) {
         expect(err.toString()).toEqual(
           'HttpError: [500] - This is the text error'
         )
+        catched = true
       }
+      expect(catched).toBeTruthy()
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
@@ -307,11 +339,14 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
+      let catched = false
       try {
         await fakeDispatch(api.actions.color.get())
       } catch (err) {
         expect(err.toString()).toEqual('HttpError: [404] - whatever')
+        catched = true
       }
+      expect(catched).toBeTruthy()
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual('HttpError: [404] - whatever')

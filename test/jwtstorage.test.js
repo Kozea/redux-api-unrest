@@ -164,14 +164,16 @@ describe('Api unrest can handle JWT', () => {
         },
       }
     )
+    let catched = true
     try {
       await api.actions.color.get()(
         () => ({}),
         () => ({ api: { color: { loading: false } } })
       )
     } catch (err) {
-      expect()
+      catched = true
     }
+    expect(catched).toBeTruthy()
     expect(storage.jwt).toBeUndefined()
   })
   it('uses the localStorage if available', () => {

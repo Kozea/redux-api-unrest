@@ -82,11 +82,14 @@ describe('Api unrest update the state when fetching', () => {
     expect(store.getState().color.loading).toBeFalsy()
     const fetchPromise = store.dispatch(api.actions.color.get())
     expect(store.getState().color.loading).toBeTruthy()
+    let catched = false
     try {
       await fetchPromise
     } catch (err) {
       expect(err).toBeTruthy()
+      catched = true
     }
+    expect(catched).toBeTruthy()
     expect(store.getState().color.loading).toBeFalsy()
     expect(store.getState().color.error).toEqual('HttpError: [500] - error')
   })
@@ -121,15 +124,17 @@ describe('Api unrest update the state when fetching', () => {
       combineReducers(api.reducers),
       applyMiddleware(thunk)
     )
-
+    let catched = false
     try {
       await Promise.all([
         store.dispatch(api.actions.color.get()),
         store.dispatch(api.actions.color.get()),
       ])
     } catch (err) {
+      catched = true
       expect(err.name).toEqual('AlreadyLoadingError')
     }
+    expect(catched).toBeTruthy()
   })
   it('still success on first request on concurrent requests', async () => {
     const api = new ApiUnrest(

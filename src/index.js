@@ -83,16 +83,24 @@ export default class ApiUnrest {
     return Object.entries(routes).reduce((actions, [endpoint, path]) => {
       const urlFormatter = compile(`${this.rootPath}/${path}`)
       actions[endpoint] = methods.reduce((routeActions, method) => {
-        routeActions[method] = (urlParameters = {}, payload = {}) =>
-          this._fetchThunk(
+        routeActions[method] = (payload = {}) =>
+          this._fetchThunk(endpoint, urlFormatter, {}, method, payload)
+        routeActions[`${method}Item`] = (urlParameters, payload = {}) => {
+          if (!urlParameters || isEmpty(urlParameters)) {
+            throw new Error(
+              `${method}Item on ${
+                this.prefix
+              }.${endpoint} called without parameters`
+            )
+          }
+          return this._fetchThunk(
             endpoint,
             urlFormatter,
             urlParameters,
             method,
             payload
           )
-        routeActions[`${method}All`] = payload =>
-          routeActions[method](void 0, payload)
+        }
         return routeActions
       }, {})
       return actions

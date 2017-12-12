@@ -310,10 +310,10 @@ describe('Api unrest provides a cache', () => {
       applyMiddleware(thunk, logMiddleware)
     )
 
-    await store.dispatch(api.actions.color.get({ id: 3 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }))
     expect(store.getState().api.color.objects[0]).toEqual('/base/color/3')
 
-    await store.dispatch(api.actions.color.get({ id: 4 }))
+    await store.dispatch(api.actions.color.getItem({ id: 4 }))
     expect(store.getState().api.color.objects[0]).toEqual('/base/color/4')
 
     expect(actionLog[0].type).toEqual(api.events.color.fetch)
@@ -359,10 +359,10 @@ describe('Api unrest provides a cache', () => {
       applyMiddleware(thunk, logMiddleware)
     )
 
-    await store.dispatch(api.actions.color.get({ id: 3 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }))
     expect(store.getState().api.color.objects[0]).toEqual('/base/color/3')
 
-    await store.dispatch(api.actions.color.get({ id: 3 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }))
     expect(store.getState().api.color.objects[0]).toEqual('/base/color/3')
 
     expect(actionLog[0].type).toEqual(api.events.color.fetch)
@@ -408,12 +408,12 @@ describe('Api unrest provides a cache', () => {
       applyMiddleware(thunk, logMiddleware)
     )
 
-    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 0 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }, { offset: 0 }))
     expect(store.getState().api.color.objects[0]).toEqual(
       '/base/color/3?offset=0'
     )
 
-    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 10 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }, { offset: 10 }))
     expect(store.getState().api.color.objects[0]).toEqual(
       '/base/color/3?offset=10'
     )
@@ -461,12 +461,12 @@ describe('Api unrest provides a cache', () => {
       applyMiddleware(thunk, logMiddleware)
     )
 
-    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 0 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }, { offset: 0 }))
     expect(store.getState().api.color.objects[0]).toEqual(
       '/base/color/3?offset=0'
     )
 
-    await store.dispatch(api.actions.color.get({ id: 3 }, { offset: 0 }))
+    await store.dispatch(api.actions.color.getItem({ id: 3 }, { offset: 0 }))
     expect(store.getState().api.color.objects[0]).toEqual(
       '/base/color/3?offset=0'
     )
