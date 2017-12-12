@@ -217,12 +217,13 @@ export default class ApiUnrest {
         const arlreadyLoadingError = new Error('Already loading')
         arlreadyLoadingError.name = 'AlreadyLoadingError'
         handleError(arlreadyLoadingError)
-        return false
+        return { status: 'failed', error: arlreadyLoadingError }
       }
       // Here we go
       dispatch({ type: this.events[endpoint].fetch })
       if (this.cache && method === 'get') {
-        const { lastFetch, lastFetchParameters } = this.apiRoot(state)[endpoint]
+        const endpointState = this.apiRoot(state)[endpoint]
+        const { lastFetch, lastFetchParameters } = endpointState
         if (
           lastFetch &&
           Date.now() - lastFetch < this.cache &&
@@ -230,7 +231,11 @@ export default class ApiUnrest {
             deepEqual(lastFetchParameters, parameters))
         ) {
           dispatch({ type: this.events[endpoint].cache })
-          return true
+          return {
+            status: 'cache',
+            objects: endpointState.objects,
+            metadata: endpointState.metadata,
+          }
         }
       }
       try {
@@ -248,14 +253,14 @@ export default class ApiUnrest {
           // This request was a batch if there were no url parameters
           batch: isEmpty(urlParameters),
         })
-        return true
+        return { status: 'success', objects, metadata }
       } catch (error) {
         dispatch({
           type: this.events[endpoint].error,
           error: error.toString(),
         })
         handleError(error)
-        return false
+        return { status: 'failed', error }
       }
     }
   }

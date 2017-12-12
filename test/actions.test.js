@@ -77,8 +77,10 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
-      const hasSucceded = await fakeDispatch(api.actions.color.get())
-      expect(hasSucceded).toBeTruthy()
+      const report = await fakeDispatch(api.actions.color.get())
+      expect(report.status).toEqual('success')
+      expect(report.objects).toEqual(actionHistory[1].objects)
+      expect(report.metadata).toEqual(actionHistory[1].metadata)
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('get')
@@ -97,15 +99,17 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
-      const hasSucceded = await fakeDispatch(
+      const report = await fakeDispatch(
         api.actions.color.getAll({ offset: 0, limit: 50 })
       )
-      expect(hasSucceded).toBeTruthy()
+      expect(report.status).toEqual('success')
+      expect(report.objects).toEqual(actionHistory[1].objects)
+      expect(report.metadata).toEqual(actionHistory[1].metadata)
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('get')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-      expect(actionHistory[1].objects[0].method).toEqual('get')
+      // expect(actionHistory[1].objects[0].method).toEqual('get')
       expect(actionHistory[1].objects[0].url).toEqual(
         '/base/color?limit=50&offset=0'
       )
@@ -122,10 +126,10 @@ describe('Actions of api-unrest', () => {
         typeof action === 'function'
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
-      const hasSucceded = await fakeDispatch(
+      const report = await fakeDispatch(
         api.actions.color.get({ id: 5 }, { offset: 0, limit: 50 })
       )
-      expect(hasSucceded).toBeTruthy()
+      expect(report.status).toEqual('success')
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('get')
@@ -379,8 +383,11 @@ describe('Actions of api-unrest', () => {
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
 
-      const hasSucceded = await fakeDispatch(api.actions.color.get())
-      expect(hasSucceded).toBeFalsy()
+      const report = await fakeDispatch(api.actions.color.get())
+      expect(report.status).toEqual('failed')
+      expect(report.error.toString()).toEqual(
+        'HttpError: [500] - This is the text error'
+      )
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
