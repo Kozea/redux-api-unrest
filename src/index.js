@@ -4,9 +4,9 @@ import { compile } from 'path-to-regexp'
 // eslint-disable-next-line no-unused-vars
 import regeneratorRuntime from 'regenerator-runtime'
 
-const rootPrefix = '@@api-unrest'
-const methods = ['get', 'put', 'post', 'patch', 'delete']
-const initialEndpointState = {
+export const apiUnrestPrefix = '@@api-unrest'
+export const methods = ['get', 'put', 'post', 'patch', 'delete']
+export const initialEndpointState = {
   objects: [],
   metadata: {},
   loading: false,
@@ -15,7 +15,7 @@ const initialEndpointState = {
   lastFetchParameters: null,
 }
 
-const httpError = (code, description) => {
+export const httpError = (code, description) => {
   const error = new Error(`[${code}] - ${description}`)
   error.name = 'HttpError'
   error.code = code
@@ -64,7 +64,7 @@ export default class ApiUnrest {
 
   _getEvents(routes) {
     return Object.keys(routes).reduce((events, endpoint) => {
-      const eventPath = `${rootPrefix}/${this.prefix}/${endpoint}`
+      const eventPath = `${apiUnrestPrefix}/${this.prefix}/${endpoint}`
       events[endpoint] = {
         fetch: `${eventPath}/FETCH`,
         success: `${eventPath}/SUCCESS`,
@@ -184,6 +184,7 @@ export default class ApiUnrest {
               urlParameters,
               method,
               payload,
+              prefix: this.prefix,
             },
             dispatch,
             getState
