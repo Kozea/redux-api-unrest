@@ -7,7 +7,7 @@
   "author": "Florian Mounier",
   "license": "MIT",
   "scripts": {
-    "build": "babel src --out-dir lib",
+    "build": "rm -r lib && babel src --out-dir lib",
     "lint": "eslint src",
     "test": "jest --coverage",
     "coverage": "cat ./coverage/lcov.info | coveralls",
