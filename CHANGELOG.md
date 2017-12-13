@@ -1,3 +1,6 @@
+## [0.5.2](https://github.com/Kozea/redux-api-unrest/compare/v0.5.1...v0.5.2)
+  * Add json content on http error when response is json.
+
 ## [0.5.1](https://github.com/Kozea/redux-api-unrest/compare/v0.5.0...v0.5.1)
   * Fix various packaging problems
 

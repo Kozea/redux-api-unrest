@@ -18,11 +18,12 @@ export const initialEndpointState = {
   lastFetchParameters: null,
 }
 
-export const httpError = (code, description) => {
+export const httpError = (code, description, json) => {
   const error = new Error(`[${code}] - ${description}`)
   error.name = 'HttpError'
   error.code = code
   error.description = description
+  error.json = json
   return error
 }
 
@@ -300,10 +301,7 @@ export default class ApiUnrest {
       if (response.status === 404 && json.occurences === 0) {
         return json
       }
-      throw httpError(
-        response.status,
-        json.message || json.description || JSON.stringify(json)
-      )
+      throw httpError(response.status, json.message || json.description, json)
     }
     return response.json()
   }
