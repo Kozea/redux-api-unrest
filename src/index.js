@@ -74,6 +74,7 @@ export default class ApiUnrest {
         success: `${eventPath}/SUCCESS`,
         error: `${eventPath}/ERROR`,
         cache: `${eventPath}/CACHE`,
+        reset: `${eventPath}/RESET`,
       }
       return events
     }, {})
@@ -110,6 +111,8 @@ export default class ApiUnrest {
         }
         return routeActions
       }, {})
+      actions[endpoint].reset = () => dispatch =>
+        dispatch({ type: this.events[endpoint].reset })
       return actions
     }, {})
   }
@@ -153,6 +156,10 @@ export default class ApiUnrest {
             return {
               ...state,
               loading: false,
+            }
+          case this.events[endpoint].reset:
+            return {
+              ...initialEndpointState,
             }
           default:
             return state

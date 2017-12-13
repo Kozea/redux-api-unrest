@@ -112,6 +112,44 @@ describe('Api unrest reducers', () => {
     expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
   })
 
+  it('resets correctly the store', () => {
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(reducer, applyMiddleware(thunk))
+
+    store.dispatch({
+      type: api.events.color.success,
+      objects: [{ id: 1, name: 'orange' }, { id: 2, name: 'yellow' }],
+      metadata: { occurences: 2, primary_keys: ['id'] },
+      method: 'GET',
+      parameters: {},
+      batch: true,
+    })
+    expect(store.getState().color.objects).toEqual([
+      { id: 1, name: 'orange' },
+      { id: 2, name: 'yellow' },
+    ])
+    expect(store.getState().color.error).toBeNull()
+    expect(store.getState().color.lastFetch).not.toBeNull()
+    expect(store.getState().color.lastFetchParameters).toEqual({})
+    expect(store.getState().color.loading).toEqual(false)
+    expect(store.getState().color.metadata.occurences).toEqual(2)
+    expect(store.getState().color.metadata.primary_keys).toEqual(['id'])
+    store.dispatch(api.actions.color.reset())
+    expect(store.getState().color).toEqual({
+      objects: [],
+      error: null,
+      lastFetch: null,
+      lastFetchParameters: null,
+      loading: false,
+      metadata: {},
+    })
+  })
+
   it('fills correctly the store on another get', () => {
     const api = new ApiUnrest({
       fruit: 'fruit',
