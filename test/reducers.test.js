@@ -88,7 +88,7 @@ describe('Api unrest reducers', () => {
       type: api.events.color.success,
       objects: [{ id: 1, name: 'orange' }, { id: 2, name: 'yellow' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
-      method: 'get',
+      method: 'GET',
       parameters: {},
       batch: true,
     })
@@ -133,7 +133,7 @@ describe('Api unrest reducers', () => {
       type: api.events.color.success,
       objects: [{ id: 4, name: 'blue' }, { id: 2, name: 'green' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
-      method: 'get',
+      method: 'GET',
       parameters: {},
       batch: true,
     })
@@ -178,7 +178,7 @@ describe('Api unrest reducers', () => {
       type: api.events.color.success,
       objects: [{ id: 4, name: 'blue' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
-      method: 'get',
+      method: 'GET',
       parameters: { id: 4 },
       batch: false,
     })
@@ -220,7 +220,7 @@ describe('Api unrest reducers', () => {
       type: api.events.fruit.success,
       objects: [{ id: 5, name: 'pink' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
-      method: 'post',
+      method: 'POST',
       parameters: { id: 5 },
       batch: false,
     })
@@ -261,7 +261,7 @@ describe('Api unrest reducers', () => {
       type: api.events.fruit.success,
       objects: [{ id: 9, name: 'purple' }, { id: 8, name: 'orangered' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
-      method: 'put',
+      method: 'PUT',
       parameters: {},
       batch: true,
     })
@@ -301,7 +301,7 @@ describe('Api unrest reducers', () => {
       type: api.events.fruit.success,
       objects: [{ id: 2, name: 'forestgreen' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
-      method: 'put',
+      method: 'PUT',
       parameters: { id: 2 },
       batch: false,
     })
@@ -342,7 +342,7 @@ describe('Api unrest reducers', () => {
       type: api.events.fruit.success,
       objects: [{ id: 4, name: 'indigo' }, { id: 5, name: 'cream' }],
       metadata: { occurences: 2, primary_keys: ['id'] },
-      method: 'patch',
+      method: 'PATCH',
       parameters: {},
       batch: true,
     })
@@ -383,7 +383,7 @@ describe('Api unrest reducers', () => {
       type: api.events.fruit.success,
       objects: [{ id: 2, name: 'forestgreen' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
-      method: 'patch',
+      method: 'PATCH',
       parameters: { id: 2 },
       batch: false,
     })
@@ -428,7 +428,7 @@ describe('Api unrest reducers', () => {
         { id: 5, name: 'pink' },
       ],
       metadata: { occurences: 3, primary_keys: ['id'] },
-      method: 'delete',
+      method: 'DELETE',
       parameters: {},
       batch: true,
     })
@@ -465,7 +465,7 @@ describe('Api unrest reducers', () => {
       type: api.events.fruit.success,
       objects: [{ id: 2, name: 'forestgreen' }],
       metadata: { occurences: 1, primary_keys: ['id'] },
-      method: 'delete',
+      method: 'DELETE',
       parameters: { id: 2 },
       batch: false,
     })

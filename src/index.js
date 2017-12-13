@@ -84,7 +84,13 @@ export default class ApiUnrest {
       const urlFormatter = compile(`${this.rootPath}/${path}`)
       actions[endpoint] = methods.reduce((routeActions, method) => {
         routeActions[method] = (payload = {}) =>
-          this._fetchThunk(endpoint, urlFormatter, {}, method, payload)
+          this._fetchThunk(
+            endpoint,
+            urlFormatter,
+            {},
+            method.toUpperCase(),
+            payload
+          )
         routeActions[`${method}Item`] = (urlParameters, payload = {}) => {
           if (!urlParameters || isEmpty(urlParameters)) {
             throw new Error(
@@ -97,7 +103,7 @@ export default class ApiUnrest {
             endpoint,
             urlFormatter,
             urlParameters,
-            method,
+            method.toUpperCase(),
             payload
           )
         }
@@ -130,9 +136,9 @@ export default class ApiUnrest {
               metadata: action.metadata,
               loading: false,
               error: null,
-              lastFetch: action.method === 'get' ? Date.now() : state.lastFetch,
+              lastFetch: action.method === 'GET' ? Date.now() : state.lastFetch,
               lastFetchParameters:
-                action.method === 'get'
+                action.method === 'GET'
                   ? action.parameters
                   : state.lastFetchParameters,
             }
@@ -161,13 +167,13 @@ export default class ApiUnrest {
     // A filter that only returns objects that are not in the given list
     const notIn = objs => obj => !objs.some(o => pkEqual(o, obj))
     switch (method) {
-      case 'get':
+      case 'GET':
         // In case of a GET we simply use the new objects
         return [...objects]
-      case 'post':
+      case 'POST':
         // In case of a POST we concatenate the new data to the old
         return [...olds, ...objects]
-      case 'put':
+      case 'PUT':
         // In case of a PUT we replace all if it's a batch
         if (batch) {
           // If there's no path variables it's a batch PUT so
@@ -176,11 +182,11 @@ export default class ApiUnrest {
       // In case of a PUT one we replace the one that changed
       // Since it's exactly like PATCH we are falling through
       // eslint-disable-next-line no-fallthrough
-      case 'patch':
+      case 'PATCH':
         // In case of a PATCH we replace the element that changed
         // Old objects without the updated new objects + the new objects
         return [...olds.filter(notIn(objects)), ...objects]
-      case 'delete':
+      case 'DELETE':
         // In case of a DELETE we remove all
         return [...olds.filter(notIn(objects))]
     }
@@ -189,14 +195,14 @@ export default class ApiUnrest {
   _fetchThunk(endpoint, urlFormatter, urlParameters, method, payload) {
     return async (dispatch, getState) => {
       const query =
-        method === 'get' && !isEmpty(payload)
+        method === 'GET' && !isEmpty(payload)
           ? `?${queryString.stringify(payload)}`
           : ''
       const url = urlFormatter(urlParameters) + query
       // In case of a get request, add get parameters to parameters
       // (This prevents cache on different url queries: ?offset=0 vs ?offset=10)
       const parameters =
-        method === 'get' ? { ...urlParameters, ...payload } : urlParameters
+        method === 'GET' ? { ...urlParameters, ...payload } : urlParameters
       const handleError = error => {
         // If error handler returns true, the error will propagate
         if (
@@ -229,7 +235,7 @@ export default class ApiUnrest {
       }
       // Here we go
       dispatch({ type: this.events[endpoint].fetch })
-      if (this.cache && method === 'get') {
+      if (this.cache && method === 'GET') {
         const endpointState = this.apiRoot(state)[endpoint]
         const { lastFetch, lastFetchParameters } = endpointState
         if (
@@ -280,7 +286,7 @@ export default class ApiUnrest {
         Accept: 'application/json',
       },
     }
-    if (method !== 'get' && !isEmpty(payload)) {
+    if (method !== 'GET' && !isEmpty(payload)) {
       opts.headers['Content-Type'] = 'application/json'
       opts.body = JSON.stringify(payload)
     }

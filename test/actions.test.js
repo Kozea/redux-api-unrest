@@ -83,9 +83,9 @@ describe('Actions of api-unrest', () => {
       expect(report.metadata).toEqual(actionHistory[1].metadata)
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
-      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].method).toEqual('GET')
       expect(actionHistory[1].objects[0].url).toEqual('/base/color')
       expect(actionHistory[1].objects[0].headers.Accept).toEqual(
         'application/json'
@@ -107,9 +107,9 @@ describe('Actions of api-unrest', () => {
       expect(report.metadata).toEqual(actionHistory[1].metadata)
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
-      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-      // expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].method).toEqual('GET')
       expect(actionHistory[1].objects[0].url).toEqual(
         '/base/color?limit=50&offset=0'
       )
@@ -132,9 +132,9 @@ describe('Actions of api-unrest', () => {
       expect(report.status).toEqual('success')
       expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
-      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].method).toEqual('GET')
       expect(actionHistory[1].objects[0].url).toEqual(
         '/base/color/5?limit=50&offset=0'
       )
@@ -163,9 +163,9 @@ describe('Actions of api-unrest', () => {
         )
         expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
         expect(actionHistory[1].type).toEqual(api.events.tree.success)
-        expect(actionHistory[1].method).toEqual(method)
+        expect(actionHistory[1].method).toEqual(method.toUpperCase())
         expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-        expect(actionHistory[1].objects[0].method).toEqual(method)
+        expect(actionHistory[1].objects[0].method).toEqual(method.toUpperCase())
         expect(actionHistory[1].objects[0].body).toEqual('{"object":2}')
         expect(actionHistory[1].objects[0].url).toEqual('/forest/tree/pine/42')
         expect(actionHistory[1].objects[0].headers.Accept).toEqual(
@@ -186,9 +186,9 @@ describe('Actions of api-unrest', () => {
       await fakeDispatch(api.actions.tree.get({ object: 2 }))
       expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
       expect(actionHistory[1].type).toEqual(api.events.tree.success)
-      expect(actionHistory[1].method).toEqual('get')
+      expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-      expect(actionHistory[1].objects[0].method).toEqual('get')
+      expect(actionHistory[1].objects[0].method).toEqual('GET')
       expect(actionHistory[1].objects[0].url).toEqual('/forest/tree?object=2')
       expect(actionHistory[1].objects[0].headers.Accept).toEqual(
         'application/json'
@@ -205,9 +205,9 @@ describe('Actions of api-unrest', () => {
         await fakeDispatch(api.actions.tree[method]({ object: 2 }))
         expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
         expect(actionHistory[1].type).toEqual(api.events.tree.success)
-        expect(actionHistory[1].method).toEqual(method)
+        expect(actionHistory[1].method).toEqual(method.toUpperCase())
         expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
-        expect(actionHistory[1].objects[0].method).toEqual(method)
+        expect(actionHistory[1].objects[0].method).toEqual(method.toUpperCase())
         expect(actionHistory[1].objects[0].body).toEqual('{"object":2}')
         expect(actionHistory[1].objects[0].url).toEqual('/forest/tree')
         expect(actionHistory[1].objects[0].headers.Accept).toEqual(
@@ -462,7 +462,7 @@ describe('Actions of api-unrest', () => {
             expect(endpoint).toEqual('color')
             expect(url).toEqual('/base/color')
             expect(urlParameters).toEqual({})
-            expect(method).toEqual('get')
+            expect(method).toEqual('GET')
             expect(payload).toEqual({})
             expect(dispatch).toEqual(dispatchMarker)
             expect(getState).toEqual(getStateMarker)
