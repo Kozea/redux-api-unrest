@@ -7,7 +7,7 @@
   "author": "Florian Mounier",
   "license": "MIT",
   "scripts": {
-    "build": "rm -r lib && babel src --out-dir lib",
+    "build": "rimraf lib && babel src --out-dir lib",
     "lint": "eslint src",
     "test": "jest --coverage",
     "coverage": "cat ./coverage/lcov.info | coveralls",
@@ -35,7 +35,8 @@
     "jest": "^21.2.1",
     "pre-commit": "^1.2.2",
     "redux": "^3.7.2",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "rimraf": "^2.6.2"
   },
   "files": [
     "lib/"
