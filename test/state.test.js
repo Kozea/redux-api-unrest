@@ -174,6 +174,7 @@ describe('Api unrest update the state when fetching', () => {
     ])
     expect(store.getState().color.objects).toEqual(['data'])
   })
+
   it('can force its way on concurrent requests', async () => {
     const api = new ApiUnrest(
       {
@@ -224,5 +225,114 @@ describe('Api unrest update the state when fetching', () => {
     )
     expect(reports[1].promise).toBeUndefined()
     expect(store.getState().color.objects).toEqual(['/base/color/2'])
+  })
+
+  it('can force its way on concurrent requests on other method', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        apiRoot: state => state,
+        fetch: async (url, { body }) => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: [JSON.parse(body)],
+            }),
+          }
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+
+    const reports = await Promise.all([
+      store.dispatch(api.actions.color.post({ o: 1 })).catch(e => ({
+        promise: 1,
+        e,
+      })),
+      store.dispatch(api.actions.color.force.post()).catch(e => ({
+        promise: 2,
+        e,
+      })),
+      store.dispatch(api.actions.color.force.post({ o: 2 })).catch(e => ({
+        promise: 3,
+        e,
+      })),
+    ])
+
+    expect(reports[0].promise).toEqual(1)
+    expect(reports[0].e.name).toEqual('AbortError')
+    expect(reports[0].e.toString()).toEqual(
+      'AbortError: This request was aborted by a force: ' +
+        'POST /base/color (api.color)'
+    )
+    expect(reports[1].promise).toEqual(2)
+    expect(reports[1].e.name).toEqual('AbortError')
+    expect(reports[1].e.toString()).toEqual(
+      'AbortError: This request was aborted by a force: ' +
+        'POST /base/color (api.color)'
+    )
+    expect(reports[2].promise).toBeUndefined()
+    expect(store.getState().color.objects).toEqual([{ o: 2 }])
+    // What happened to the object 1 -> we can't say so don't use that!
+    expect(api.promises.color).toBeUndefined()
+  })
+
+  it('resets while a request is pending', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        apiRoot: state => state,
+        fetch: async () => {
+          await timeout(25)
+          throw new Error('We should never go here')
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+
+    expect(store.getState().color.loading).toBeFalsy()
+    const fetchPromise = store.dispatch(api.actions.color.get())
+    expect(api.promises.color).not.toBeUndefined()
+    expect(store.getState().color.loading).toBeTruthy()
+    setTimeout(() => {
+      expect(store.getState().color.loading).toBeTruthy()
+      store.dispatch(api.actions.color.reset())
+      expect(store.getState().color.loading).toBeFalsy()
+    }, 1)
+    let thrown = false
+    try {
+      await fetchPromise
+    } catch (error) {
+      thrown = true
+      expect(error.name).toEqual('AbortError')
+      expect(error.toString()).toEqual(
+        'AbortError: This request was aborted by a reset on api.color'
+      )
+    }
+    expect(thrown).toBeTruthy()
+    expect(store.getState().color.objects).toEqual([])
+    expect(api.promises.color).toBeUndefined()
   })
 })
