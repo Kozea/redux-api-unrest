@@ -61,12 +61,14 @@ export default class ApiUnrest {
     }
     this.fetch = options.fetch
 
-    this.events = this._getEvents(routes)
-    this.actions = this._getActions(routes)
-    this.reducers = this._getReducers(routes)
+    this.routes = { ...routes }
+    this.promises = {}
+    this.events = this.getEvents(routes)
+    this.actions = this.getActions(routes)
+    this.reducers = this.getReducers(routes)
   }
 
-  _getEvents(routes) {
+  getEvents(routes) {
     return Object.keys(routes).reduce((events, endpoint) => {
       const eventPath = `${apiUnrestPrefix}/${this.prefix}/${endpoint}`
       events[endpoint] = {
@@ -80,44 +82,65 @@ export default class ApiUnrest {
     }, {})
   }
 
-  _getActions(routes) {
+  getActions(routes) {
     // For each routes return a map: endpoint -> methods -> thunk -> fetch
     return Object.entries(routes).reduce((actions, [endpoint, path]) => {
       const urlFormatter = compile(`${this.rootPath}/${path}`)
-      actions[endpoint] = methods.reduce((routeActions, method) => {
-        routeActions[method] = (payload = {}) =>
-          this._fetchThunk(
-            endpoint,
-            urlFormatter,
-            {},
-            method.toUpperCase(),
-            payload
-          )
-        routeActions[`${method}Item`] = (urlParameters, payload = {}) => {
-          if (!urlParameters || isEmpty(urlParameters)) {
-            throw new Error(
-              `${method}Item on ${
-                this.prefix
-              }.${endpoint} called without parameters`
+      actions[endpoint] = methods.reduce(
+        (routeActions, method) => {
+          routeActions[method] = (payload = {}, force = false) =>
+            this.fetchThunk(
+              endpoint,
+              urlFormatter,
+              {},
+              method.toUpperCase(),
+              payload,
+              force
+            )
+          routeActions[`${method}Item`] = (
+            urlParameters,
+            payload = {},
+            force = false
+          ) => {
+            if (!urlParameters || isEmpty(urlParameters)) {
+              throw new Error(
+                `${method}Item on ${
+                  this.prefix
+                }.${endpoint} called without parameters`
+              )
+            }
+            return this.fetchThunk(
+              endpoint,
+              urlFormatter,
+              urlParameters,
+              method.toUpperCase(),
+              payload,
+              force
             )
           }
-          return this._fetchThunk(
-            endpoint,
-            urlFormatter,
-            urlParameters,
-            method.toUpperCase(),
-            payload
+          routeActions.force[method] = (payload = {}) =>
+            routeActions[method](payload, true)
+          routeActions.force[`${method}Item`] = (urlParameters, payload = {}) =>
+            routeActions[`${method}Item`](urlParameters, payload, true)
+          return routeActions
+        },
+        { force: {} }
+      )
+      actions[endpoint].reset = () => dispatch => {
+        if (this.promises[endpoint]) {
+          const abort = new Error(
+            `This request was aborted by a reset on ${this.prefix}.${endpoint}`
           )
+          abort.name = 'AbortError'
+          this.promises[endpoint].reject(abort)
         }
-        return routeActions
-      }, {})
-      actions[endpoint].reset = () => dispatch =>
         dispatch({ type: this.events[endpoint].reset })
+      }
       return actions
     }, {})
   }
 
-  _getReducers(routes) {
+  getReducers(routes) {
     return Object.keys(routes).reduce((reducers, endpoint) => {
       reducers[endpoint] = (state = initialEndpointState, action) => {
         switch (action.type) {
@@ -130,7 +153,7 @@ export default class ApiUnrest {
           case this.events[endpoint].success:
             return {
               ...state,
-              objects: this._mergeObjects(
+              objects: this.mergeObjects(
                 action.method,
                 state.objects,
                 action.objects,
@@ -169,7 +192,7 @@ export default class ApiUnrest {
     }, {})
   }
 
-  _mergeObjects(method, olds, objects, pks, batch) {
+  mergeObjects(method, olds, objects, pks, batch) {
     // An equality based on primary keys
     const pkEqual = (o1, o2) => pks.every(pk => o1[pk] === o2[pk])
     // A filter that only returns objects that are not in the given list
@@ -200,7 +223,7 @@ export default class ApiUnrest {
     }
   }
 
-  _fetchThunk(endpoint, urlFormatter, urlParameters, method, payload) {
+  fetchThunk(endpoint, urlFormatter, urlParameters, method, payload, force) {
     return async (dispatch, getState) => {
       const query =
         method === 'GET' && !isEmpty(payload)
@@ -234,12 +257,23 @@ export default class ApiUnrest {
       const state = getState()
       const { loading } = this.apiRoot(state)[endpoint]
       if (loading) {
-        // Waiting for AbortController api
-        // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
-        const arlreadyLoadingError = new Error('Already loading')
-        arlreadyLoadingError.name = 'AlreadyLoadingError'
-        handleError(arlreadyLoadingError)
-        return { status: 'failed', error: arlreadyLoadingError }
+        if (force) {
+          const abort = new Error(
+            `This request was aborted by a force: ${method} ${url} (${
+              this.prefix
+            }.${endpoint})`
+          )
+          abort.name = 'AbortError'
+          this.promises[endpoint].reject(abort)
+          dispatch({ type: this.events[endpoint].reset })
+        } else {
+          // Waiting for AbortController api
+          // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
+          const alreadyLoadingError = new Error('Already loading')
+          alreadyLoadingError.name = 'AlreadyLoadingError'
+          handleError(alreadyLoadingError)
+          return { status: 'failed', error: alreadyLoadingError }
+        }
       }
       // Here we go
       dispatch({ type: this.events[endpoint].fetch })
@@ -261,10 +295,17 @@ export default class ApiUnrest {
         }
       }
       try {
-        const { objects, ...metadata } = await this._fetchHandler(
-          url,
-          method,
-          payload
+        const { objects, ...metadata } = await new Promise(
+          (resolve, reject) => {
+            this.promises[endpoint] = {
+              resolve,
+              reject,
+              promise: this.fetchHandler(url, method, payload).then(
+                resolve,
+                reject
+              ),
+            }
+          }
         )
         dispatch({
           type: this.events[endpoint].success,
@@ -283,11 +324,13 @@ export default class ApiUnrest {
         })
         handleError(error)
         return { status: 'failed', error }
+      } finally {
+        delete this.promises[endpoint]
       }
     }
   }
 
-  async _fetchHandler(url, method, payload) {
+  async fetchHandler(url, method, payload) {
     const opts = {
       method,
       headers: {
@@ -313,7 +356,7 @@ export default class ApiUnrest {
     return response.json()
   }
 
-  _onBeforeFetchHook({ url, opts }) {
+  onBeforeFetchHook({ url, opts }) {
     if (this.storage) {
       const jwt = this.storage.getItem('jwt')
       if (jwt) {
@@ -324,13 +367,13 @@ export default class ApiUnrest {
   }
 
   async _fetch(url, opts) {
-    const hookParams = this._onBeforeFetchHook({ url, opts })
+    const hookParams = this.onBeforeFetchHook({ url, opts })
     const response = await this.fetch(hookParams.url, hookParams.opts)
-    return this._onAfterFetchHook(hookParams, response)
+    return this.onAfterFetchHook(hookParams, response)
   }
 
   // eslint-disable-next-line no-unused-vars
-  _onAfterFetchHook({ url, opts }, response) {
+  onAfterFetchHook({ url, opts }, response) {
     if (this.storage) {
       if (response.status === 401) {
         this.storage.removeItem('jwt')

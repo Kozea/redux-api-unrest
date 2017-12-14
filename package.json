@@ -38,9 +38,7 @@
     "redux-thunk": "^2.2.0",
     "rimraf": "^2.6.2"
   },
-  "files": [
-    "lib/"
-  ],
+  "files": ["lib/"],
   "importSort": {
     ".js, .jsx": {
       "parser": "babylon",
