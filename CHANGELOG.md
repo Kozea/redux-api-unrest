@@ -1,3 +1,8 @@
+## [0.6.0](https://github.com/Kozea/redux-api-unrest/compare/v0.5.3...v0.6.0)
+
+* Add abort on reset.
+* Add .force methods to force abort on previously loading endpoints.
+
 ## [0.5.3](https://github.com/Kozea/redux-api-unrest/compare/v0.5.2...v0.5.3)
 
 * Add a reset action.
@@ -8,15 +13,15 @@
 
 ## [0.5.1](https://github.com/Kozea/redux-api-unrest/compare/v0.5.0...v0.5.1)
 
-* Fix various packaging problems
+* Fix various packaging problems.
 
 # [0.5.0](https://github.com/Kozea/redux-api-unrest/compare/v0.4.0...v0.5.0)
 
-* Use uppercase methods
+* Use uppercase methods.
 
 # [0.4.0](https://github.com/Kozea/redux-api-unrest/compare/v0.3.2...v0.4.0)
 
-* Replace `methodAll()` functions with `method()` and `method()` with `methodItem()`
+* Replace `methodAll()` functions with `method()` and `method()` with `methodItem()`.
 
 ## [0.3.2](https://github.com/Kozea/redux-api-unrest/compare/v0.3.1...v0.3.2)
 
@@ -24,7 +29,7 @@
 
 ## [0.3.1](https://github.com/Kozea/redux-api-unrest/compare/v0.3.0...v0.3.1)
 
-* Patch for bad utils import
+* Patch for bad utils import.
 
 # [0.3.0](https://github.com/Kozea/redux-api-unrest/compare/v0.2.3...v0.3.0)
 
