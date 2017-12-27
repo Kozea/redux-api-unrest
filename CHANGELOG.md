@@ -1,3 +1,7 @@
+## [0.6.1](https://github.com/Kozea/redux-api-unrest/compare/v0.6.0...v0.6.1)
+
+* Dependencies update
+
 ## [0.6.0](https://github.com/Kozea/redux-api-unrest/compare/v0.5.3...v0.6.0)
 
 * Add abort on reset.
