@@ -153,13 +153,15 @@ export default class ApiUnrest {
           case this.events[endpoint].success:
             return {
               ...state,
-              objects: this.mergeObjects(
-                action.method,
-                state.objects,
-                action.objects,
-                action.metadata.primary_keys,
-                action.batch
-              ),
+              objects: action.objects
+                ? this.mergeObjects(
+                    action.method,
+                    state.objects,
+                    action.objects,
+                    action.metadata.primary_keys,
+                    action.batch
+                  )
+                : state.objects,
               metadata: action.metadata,
               loading: false,
               error: null,
@@ -353,7 +355,7 @@ export default class ApiUnrest {
       }
       throw httpError(response.status, json.message || json.description, json)
     }
-    return response.json()
+    return { ...(await response.json()), code: response.status }
   }
 
   onBeforeFetchHook({ url, opts }) {

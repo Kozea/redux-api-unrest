@@ -1,3 +1,7 @@
+## [0.6.2](https://github.com/Kozea/redux-api-unrest/compare/v0.6.1...v0.6.2)
+
+* Don't try to merge objects if there is no objects in response.
+
 ## [0.6.1](https://github.com/Kozea/redux-api-unrest/compare/v0.6.0...v0.6.1)
 
 * Dependencies update

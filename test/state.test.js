@@ -46,6 +46,7 @@ describe('Api unrest update the state when fetching', () => {
     expect(store.getState().color.loading).toBeFalsy()
     expect(store.getState().color.objects).toEqual(['response'])
     expect(store.getState().color.error).toBeNull()
+    expect(store.getState().color.metadata.code).toEqual(200)
   })
   it('sets and remove loading flag during error', async () => {
     const api = new ApiUnrest(

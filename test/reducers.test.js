@@ -518,4 +518,37 @@ describe('Api unrest reducers', () => {
     expect(store.getState().fruit.metadata.occurences).toEqual(1)
     expect(store.getState().fruit.metadata.primary_keys).toEqual(['id'])
   })
+
+  it('does nothing on missing objects', () => {
+    // When there's is a 202 success without objects for example
+    const api = new ApiUnrest({
+      fruit: 'fruit',
+      color: 'base/color/:id?',
+      tree: 'forest/tree/:type?/:age?',
+    })
+    const reducer = combineReducers(api.reducers)
+    const store = createStore(reducer, applyMiddleware(thunk))
+
+    store.dispatch({
+      type: api.events.color.success,
+      metadata: { something: true },
+      method: 'POST',
+      parameters: {},
+      batch: true,
+    })
+    expect(Object.keys(store.getState().color)).toEqual([
+      'objects',
+      'metadata',
+      'loading',
+      'error',
+      'lastFetch',
+      'lastFetchParameters',
+    ])
+    expect(store.getState().color.objects).toEqual([])
+    expect(store.getState().color.error).toBeNull()
+    expect(store.getState().color.lastFetch).toBeNull()
+    expect(store.getState().color.lastFetchParameters).toBeNull()
+    expect(store.getState().color.loading).toEqual(false)
+    expect(store.getState().color.metadata.something).toBeTruthy()
+  })
 })
