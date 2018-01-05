@@ -279,7 +279,8 @@ export default class ApiUnrest {
       }
       // Here we go
       dispatch({ type: this.events[endpoint].fetch })
-      if (this.cache && method === 'GET') {
+      // Prevent cache on forced request
+      if (!loading && !force && this.cache && method === 'GET') {
         const endpointState = this.apiRoot(state)[endpoint]
         const { lastFetch, lastFetchParameters } = endpointState
         if (

@@ -1,3 +1,7 @@
+## [0.6.3](https://github.com/Kozea/redux-api-unrest/compare/v0.6.2...v0.6.3)
+
+* Fix force bug when request got cached after abort.
+
 ## [0.6.2](https://github.com/Kozea/redux-api-unrest/compare/v0.6.1...v0.6.2)
 
 * Don't try to merge objects if there is no objects in response.
