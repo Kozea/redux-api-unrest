@@ -1,6 +1,6 @@
 {
   "name": "redux-api-unrest",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "A redux reducer for unrest.",
   "main": "lib/index.js",
   "repository": "https://github.com/Kozea/redux-api-unrest",
