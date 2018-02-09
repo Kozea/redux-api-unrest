@@ -1,3 +1,8 @@
+# [0.7.0](https://github.com/Kozea/redux-api-unrest/compare/v0.6.4...v0.7.0)
+
+* Add fetch `url`, `method` and `parameters` in `metadata` in store when loading (FETCH action).
+* Update deps.
+
 ## [0.6.4](https://github.com/Kozea/redux-api-unrest/compare/v0.6.3...v0.6.4)
 
 * Update deps.
