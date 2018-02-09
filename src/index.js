@@ -149,6 +149,7 @@ export default class ApiUnrest {
               ...state,
               loading: true,
               error: null,
+              metadata: action.metadata,
             }
           case this.events[endpoint].success:
             return {
@@ -278,7 +279,14 @@ export default class ApiUnrest {
         }
       }
       // Here we go
-      dispatch({ type: this.events[endpoint].fetch })
+      dispatch({
+        type: this.events[endpoint].fetch,
+        metadata: {
+          url,
+          method,
+          parameters,
+        },
+      })
       // Prevent cache on forced request
       if (!loading && !force && this.cache && method === 'GET') {
         const endpointState = this.apiRoot(state)[endpoint]

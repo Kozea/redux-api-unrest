@@ -81,7 +81,14 @@ describe('Actions of api-unrest', () => {
       expect(report.status).toEqual('success')
       expect(report.objects).toEqual(actionHistory[1].objects)
       expect(report.metadata).toEqual(actionHistory[1].metadata)
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {},
+          url: '/base/color',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
@@ -105,7 +112,17 @@ describe('Actions of api-unrest', () => {
       expect(report.status).toEqual('success')
       expect(report.objects).toEqual(actionHistory[1].objects)
       expect(report.metadata).toEqual(actionHistory[1].metadata)
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {
+            offset: 0,
+            limit: 50,
+          },
+          url: '/base/color?limit=50&offset=0',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
@@ -130,7 +147,14 @@ describe('Actions of api-unrest', () => {
         api.actions.color.getItem({ id: 5 }, { offset: 0, limit: 50 })
       )
       expect(report.status).toEqual('success')
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: { id: 5, offset: 0, limit: 50 },
+          url: '/base/color/5?limit=50&offset=0',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
@@ -161,7 +185,14 @@ describe('Actions of api-unrest', () => {
             { object: 2 }
           )
         )
-        expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
+        expect(actionHistory[0]).toEqual({
+          type: api.events.tree.fetch,
+          metadata: {
+            method: method.toUpperCase(),
+            parameters: { type: 'pine', age: 42 },
+            url: '/forest/tree/pine/42',
+          },
+        })
         expect(actionHistory[1].type).toEqual(api.events.tree.success)
         expect(actionHistory[1].method).toEqual(method.toUpperCase())
         expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
@@ -184,7 +215,14 @@ describe('Actions of api-unrest', () => {
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       await fakeDispatch(api.actions.tree.get({ object: 2 }))
-      expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.tree.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: { object: 2 },
+          url: '/forest/tree?object=2',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.tree.success)
       expect(actionHistory[1].method).toEqual('GET')
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
@@ -203,7 +241,14 @@ describe('Actions of api-unrest', () => {
             ? action(fakeDispatch, fakeGetState)
             : actionHistory.push(action)
         await fakeDispatch(api.actions.tree[method]({ object: 2 }))
-        expect(actionHistory[0]).toEqual({ type: api.events.tree.fetch })
+        expect(actionHistory[0]).toEqual({
+          type: api.events.tree.fetch,
+          metadata: {
+            method: method.toUpperCase(),
+            parameters: {},
+            url: '/forest/tree',
+          },
+        })
         expect(actionHistory[1].type).toEqual(api.events.tree.success)
         expect(actionHistory[1].method).toEqual(method.toUpperCase())
         expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
@@ -259,7 +304,14 @@ describe('Actions of api-unrest', () => {
         catched = true
       }
       expect(catched).toBeTruthy()
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {},
+          url: '/base/color',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
         'HttpError: [500] - This is the error'
@@ -303,7 +355,14 @@ describe('Actions of api-unrest', () => {
         catched = true
       }
       expect(catched).toBeTruthy()
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {},
+          url: '/base/color',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
         'HttpError: [500] - This is the text error'
@@ -347,7 +406,14 @@ describe('Actions of api-unrest', () => {
         catched = true
       }
       expect(catched).toBeTruthy()
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {},
+          url: '/base/color',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual('HttpError: [404] - whatever')
     })
@@ -383,7 +449,14 @@ describe('Actions of api-unrest', () => {
           ? action(fakeDispatch, fakeGetState)
           : actionHistory.push(action)
       await fakeDispatch(api.actions.color.get())
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {},
+          url: '/base/color',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
       expect(actionHistory[1].objects).toEqual([])
       expect(actionHistory[1].metadata.occurences).toEqual(0)
@@ -423,7 +496,14 @@ describe('Actions of api-unrest', () => {
       expect(report.error.toString()).toEqual(
         'HttpError: [500] - This is the text error'
       )
-      expect(actionHistory[0]).toEqual({ type: api.events.color.fetch })
+      expect(actionHistory[0]).toEqual({
+        type: api.events.color.fetch,
+        metadata: {
+          method: 'GET',
+          parameters: {},
+          url: '/base/color',
+        },
+      })
       expect(actionHistory[1].type).toEqual(api.events.color.error)
       expect(actionHistory[1].error).toEqual(
         'HttpError: [500] - This is the text error'
