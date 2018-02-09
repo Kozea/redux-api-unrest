@@ -1,3 +1,7 @@
+## [0.7.1](https://github.com/Kozea/redux-api-unrest/compare/v0.7.0...v0.7.1)
+
+* Add fetch `payload` and restrict `parameters` to url parameters in `metadata`.
+
 # [0.7.0](https://github.com/Kozea/redux-api-unrest/compare/v0.6.4...v0.7.0)
 
 * Add fetch `url`, `method` and `parameters` in `metadata` in store when loading (FETCH action).

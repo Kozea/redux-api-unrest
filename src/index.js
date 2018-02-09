@@ -284,7 +284,8 @@ export default class ApiUnrest {
         metadata: {
           url,
           method,
-          parameters,
+          parameters: urlParameters,
+          payload,
         },
       })
       // Prevent cache on forced request

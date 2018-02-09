@@ -86,6 +86,7 @@ describe('Actions of api-unrest', () => {
         metadata: {
           method: 'GET',
           parameters: {},
+          payload: {},
           url: '/base/color',
         },
       })
@@ -116,7 +117,8 @@ describe('Actions of api-unrest', () => {
         type: api.events.color.fetch,
         metadata: {
           method: 'GET',
-          parameters: {
+          parameters: {},
+          payload: {
             offset: 0,
             limit: 50,
           },
@@ -151,7 +153,8 @@ describe('Actions of api-unrest', () => {
         type: api.events.color.fetch,
         metadata: {
           method: 'GET',
-          parameters: { id: 5, offset: 0, limit: 50 },
+          parameters: { id: 5 },
+          payload: { offset: 0, limit: 50 },
           url: '/base/color/5?limit=50&offset=0',
         },
       })
@@ -190,6 +193,7 @@ describe('Actions of api-unrest', () => {
           metadata: {
             method: method.toUpperCase(),
             parameters: { type: 'pine', age: 42 },
+            payload: { object: 2 },
             url: '/forest/tree/pine/42',
           },
         })
@@ -219,7 +223,8 @@ describe('Actions of api-unrest', () => {
         type: api.events.tree.fetch,
         metadata: {
           method: 'GET',
-          parameters: { object: 2 },
+          parameters: {},
+          payload: { object: 2 },
           url: '/forest/tree?object=2',
         },
       })
@@ -246,6 +251,7 @@ describe('Actions of api-unrest', () => {
           metadata: {
             method: method.toUpperCase(),
             parameters: {},
+            payload: { object: 2 },
             url: '/forest/tree',
           },
         })
@@ -309,6 +315,7 @@ describe('Actions of api-unrest', () => {
         metadata: {
           method: 'GET',
           parameters: {},
+          payload: {},
           url: '/base/color',
         },
       })
@@ -360,6 +367,7 @@ describe('Actions of api-unrest', () => {
         metadata: {
           method: 'GET',
           parameters: {},
+          payload: {},
           url: '/base/color',
         },
       })
@@ -411,6 +419,7 @@ describe('Actions of api-unrest', () => {
         metadata: {
           method: 'GET',
           parameters: {},
+          payload: {},
           url: '/base/color',
         },
       })
@@ -454,6 +463,7 @@ describe('Actions of api-unrest', () => {
         metadata: {
           method: 'GET',
           parameters: {},
+          payload: {},
           url: '/base/color',
         },
       })
@@ -501,6 +511,7 @@ describe('Actions of api-unrest', () => {
         metadata: {
           method: 'GET',
           parameters: {},
+          payload: {},
           url: '/base/color',
         },
       })
