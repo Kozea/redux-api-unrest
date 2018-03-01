@@ -1,3 +1,7 @@
+## [0.7.2](https://github.com/Kozea/redux-api-unrest/compare/v0.7.1...v0.7.2)
+
+* Update deps.
+
 ## [0.7.1](https://github.com/Kozea/redux-api-unrest/compare/v0.7.0...v0.7.1)
 
 * Add fetch `payload` and restrict `parameters` to url parameters in `metadata`.
