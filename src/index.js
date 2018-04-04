@@ -370,7 +370,13 @@ export default class ApiUnrest {
 
   onBeforeFetchHook({ url, opts }) {
     if (this.storage) {
-      const jwt = this.storage.getItem('jwt')
+      let jwt = null
+      try {
+        jwt = this.storage.getItem('jwt')
+      } catch (e) {
+        // Safari private mode
+        console && console.warn(e)
+      }
       if (jwt) {
         opts.headers.Authorization = `Bearer ${jwt}`
       }
@@ -388,9 +394,19 @@ export default class ApiUnrest {
   onAfterFetchHook({ url, opts }, response) {
     if (this.storage) {
       if (response.status === 401) {
-        this.storage.removeItem('jwt')
+        try {
+          this.storage.removeItem('jwt')
+        } catch (e) {
+          // Safari private mode
+          console && console.warn(e)
+        }
       } else if (response.headers.get('Authorization')) {
-        this.storage.setItem('jwt', response.headers.get('Authorization'))
+        try {
+          this.storage.setItem('jwt', response.headers.get('Authorization'))
+        } catch (e) {
+          // Safari private mode
+          console && console.warn(e)
+        }
       }
     }
     return response

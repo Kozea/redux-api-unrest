@@ -1,3 +1,7 @@
+## [0.7.3](https://github.com/Kozea/redux-api-unrest/compare/v0.7.2...v0.7.3)
+
+* Prevent crash with safari private mode for localStorage
+
 ## [0.7.2](https://github.com/Kozea/redux-api-unrest/compare/v0.7.1...v0.7.2)
 
 * Update deps.
