@@ -268,7 +268,6 @@ export default class ApiUnrest {
           )
           abort.name = 'AbortError'
           this.promises[endpoint].reject(abort)
-          dispatch({ type: this.events[endpoint].reset })
         } else {
           // Waiting for AbortController api
           // https://developer.mozilla.org/en-US/docs/Web/API/AbortController

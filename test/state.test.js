@@ -284,10 +284,9 @@ describe('Api unrest update the state when fetching', () => {
     expect(reports[1].promise).toBeUndefined()
     expect(actionLog[0].type).toEqual(api.events.color.fetch)
 
-    expect(actionLog[1].type).toEqual(api.events.color.reset)
-    expect(actionLog[2].type).toEqual(api.events.color.fetch)
-    expect(actionLog[3].type).toEqual(api.events.color.error)
-    expect(actionLog[4].type).toEqual(api.events.color.success)
+    expect(actionLog[1].type).toEqual(api.events.color.fetch)
+    expect(actionLog[2].type).toEqual(api.events.color.error)
+    expect(actionLog[3].type).toEqual(api.events.color.success)
   })
 
   it('can force its way on concurrent requests even with cache', async () => {
@@ -351,10 +350,9 @@ describe('Api unrest update the state when fetching', () => {
 
     expect(actionLog[2].type).toEqual(api.events.color.fetch)
 
-    expect(actionLog[3].type).toEqual(api.events.color.reset)
-    expect(actionLog[4].type).toEqual(api.events.color.fetch)
-    expect(actionLog[5].type).toEqual(api.events.color.error)
-    expect(actionLog[6].type).toEqual(api.events.color.success)
+    expect(actionLog[3].type).toEqual(api.events.color.fetch)
+    expect(actionLog[4].type).toEqual(api.events.color.error)
+    expect(actionLog[5].type).toEqual(api.events.color.success)
   })
 
   it('can force its way on concurrent requests on other method', async () => {
