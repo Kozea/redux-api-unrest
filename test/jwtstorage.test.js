@@ -186,4 +186,58 @@ describe('Api unrest can handle JWT', () => {
     const api = new ApiUnrest({}, { JWTStorage: true })
     expect(api.storage).toBeNull()
   })
+  it('do nothing if the localStorage is broken', async () => {
+    // Hello safari!
+    jest.spyOn(console, 'warn')
+    global.console.warn.mockImplementation(() => {})
+    const storage = {
+      getItem() {
+        throw new Error('Bad getItem')
+      },
+      setItem() {
+        throw new Error('Bad setItem')
+      },
+      removeItem() {
+        throw new Error('Bad removeItem')
+      },
+    }
+
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        JWTStorage: storage,
+        apiRoot: state => state,
+        fetch: async (url, opts) => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: [{ headers: opts.headers }],
+            }),
+          }
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+    await store.dispatch(api.actions.color.get())
+    expect(
+      store.getState().color.objects[0].headers.Authorization
+    ).toBeUndefined()
+    expect(storage.jwt).toBeUndefined()
+    global.console.warn.mockRestore()
+  })
 })
