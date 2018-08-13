@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 // eslint-disable-next-line no-unused-vars
 import regeneratorRuntime from 'regenerator-runtime'
 
-import ApiUnrest from '../src'
+import ApiUnrest, { httpError } from '../src'
 import { timeout } from './utils'
 
 describe('Api unrest can handle JWT', () => {
@@ -177,16 +177,17 @@ describe('Api unrest can handle JWT', () => {
     expect(storage.jwt).toBeUndefined()
   })
   it('uses the localStorage if available', () => {
-    global.localStorage = { iam: 'localStorage' }
     const api = new ApiUnrest({}, { JWTStorage: true })
-    delete global.localStorage
-    expect(api.storage).toEqual({ iam: 'localStorage' })
+    expect(api.storage).toEqual(global.localStorage)
   })
-  it('do nothing if the localStorage is unavailable', () => {
+  it('does nothing if the localStorage is unavailable', () => {
+    const { localStorage } = global
+    delete global.localStorage
     const api = new ApiUnrest({}, { JWTStorage: true })
     expect(api.storage).toBeNull()
+    global.localStorage = localStorage
   })
-  it('do nothing if the localStorage is broken', async () => {
+  it('does nothing if the localStorage is broken #1', async () => {
     // Hello safari!
     jest.spyOn(console, 'warn')
     global.console.warn.mockImplementation(() => {})
@@ -219,10 +220,10 @@ describe('Api unrest can handle JWT', () => {
               get: key =>
                 ({
                   'Content-Type': 'application/json',
+                  Authorization: 'foo',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+            json: () => ({
               objects: [{ headers: opts.headers }],
             }),
           }
@@ -237,6 +238,61 @@ describe('Api unrest can handle JWT', () => {
     expect(
       store.getState().color.objects[0].headers.Authorization
     ).toBeUndefined()
+    expect(storage.jwt).toBeUndefined()
+    global.console.warn.mockRestore()
+  })
+  it('does nothing if the localStorage is broken #2', async () => {
+    // Hello safari!
+    jest.spyOn(console, 'warn')
+    global.console.warn.mockImplementation(() => {})
+    const storage = {
+      getItem() {
+        throw new Error('Bad getItem')
+      },
+      setItem() {
+        throw new Error('Bad setItem')
+      },
+      removeItem() {
+        throw new Error('Bad removeItem')
+      },
+    }
+
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        JWTStorage: storage,
+        apiRoot: state => state,
+        fetch: async () => {
+          await timeout(25)
+          return {
+            status: 401,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'text/plain',
+                  Authorization: 'foo',
+                }[key]),
+            },
+            text: () => 'Fake error',
+          }
+        },
+      }
+    )
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk)
+    )
+    const promise = store.dispatch(api.actions.color.get())
+    expect(promise).rejects.toEqual(httpError(401, 'Fake error'))
+    try {
+      await promise
+    } catch (e) {
+      // Let's await for coverage to take lines in account
+    }
     expect(storage.jwt).toBeUndefined()
     global.console.warn.mockRestore()
   })

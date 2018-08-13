@@ -1,10 +1,11 @@
 import deepEqual from 'deep-equal'
-import fetch from 'isomorphic-fetch'
+import isoFetch from 'isomorphic-fetch'
 import { compile } from 'path-to-regexp'
 import queryString from 'query-string'
 // eslint-disable-next-line no-unused-vars
 import regeneratorRuntime from 'regenerator-runtime'
 
+import { AbortController, patchFetchMaybe } from './ponyfill'
 import { isEmpty } from './utils'
 
 export const apiUnrestPrefix = '@@api-unrest'
@@ -41,13 +42,13 @@ export default class ApiUnrest {
       JWTStorage: false,
       errorHandler: () => true,
       apiRoot: state => state[this.prefix],
-      fetch,
+      fetch: isoFetch,
       ...options,
     }
     this.prefix = options.prefix
     this.rootPath = options.rootPath
     this.cache = options.cache
-    this.storage = null
+    this.storage = null // eslint-disable-next-line no-unused-vars
     this.apiRoot = options.apiRoot
     this.errorHandler = options.errorHandler
     if (options.JWTStorage) {
@@ -59,10 +60,10 @@ export default class ApiUnrest {
         this.storage = options.JWTStorage
       }
     }
-    this.fetch = options.fetch
+    this.fetch = patchFetchMaybe(options.fetch)
 
     this.routes = { ...routes }
-    this.promises = {}
+    this.fetches = {}
     this.events = this.getEvents(routes)
     this.actions = this.getActions(routes)
     this.reducers = this.getReducers(routes)
@@ -75,6 +76,7 @@ export default class ApiUnrest {
         fetch: `${eventPath}/FETCH`,
         success: `${eventPath}/SUCCESS`,
         error: `${eventPath}/ERROR`,
+        abort: `${eventPath}/ABORT`,
         cache: `${eventPath}/CACHE`,
         reset: `${eventPath}/RESET`,
       }
@@ -127,12 +129,8 @@ export default class ApiUnrest {
         { force: {} }
       )
       actions[endpoint].reset = () => dispatch => {
-        if (this.promises[endpoint]) {
-          const abort = new Error(
-            `This request was aborted by a reset on ${this.prefix}.${endpoint}`
-          )
-          abort.name = 'AbortError'
-          this.promises[endpoint].reject(abort)
+        if (this.fetches[endpoint]) {
+          this.fetches[endpoint].abort()
         }
         dispatch({ type: this.events[endpoint].reset })
       }
@@ -177,6 +175,12 @@ export default class ApiUnrest {
               ...state,
               loading: false,
               error: action.error,
+            }
+          case this.events[endpoint].abort:
+            return {
+              ...state,
+              loading: false,
+              error: null,
             }
           case this.events[endpoint].cache:
             return {
@@ -261,13 +265,7 @@ export default class ApiUnrest {
       const { loading } = this.apiRoot(state)[endpoint]
       if (loading) {
         if (force) {
-          const abort = new Error(
-            `This request was aborted by a force: ${method} ${url} (${
-              this.prefix
-            }.${endpoint})`
-          )
-          abort.name = 'AbortError'
-          this.promises[endpoint].reject(abort)
+          this.fetches[endpoint].abort()
         } else {
           // Waiting for AbortController api
           // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
@@ -306,17 +304,12 @@ export default class ApiUnrest {
         }
       }
       try {
-        const { objects, ...metadata } = await new Promise(
-          (resolve, reject) => {
-            this.promises[endpoint] = {
-              resolve,
-              reject,
-              promise: this.fetchHandler(url, method, payload).then(
-                resolve,
-                reject
-              ),
-            }
-          }
+        this.fetches[endpoint] = new AbortController()
+        const { objects, ...metadata } = await this.fetchHandler(
+          url,
+          method,
+          payload,
+          this.fetches[endpoint].signal
         )
         dispatch({
           type: this.events[endpoint].success,
@@ -329,6 +322,12 @@ export default class ApiUnrest {
         })
         return { status: 'success', objects, metadata }
       } catch (error) {
+        if (error.name === 'AbortError') {
+          dispatch({
+            type: this.events[endpoint].abort,
+          })
+          return { status: 'aborted' }
+        }
         dispatch({
           type: this.events[endpoint].error,
           error: error.toString(),
@@ -336,17 +335,18 @@ export default class ApiUnrest {
         handleError(error)
         return { status: 'failed', error }
       } finally {
-        delete this.promises[endpoint]
+        delete this.fetches[endpoint]
       }
     }
   }
 
-  async fetchHandler(url, method, payload) {
+  async fetchHandler(url, method, payload, signal) {
     const opts = {
       method,
       headers: {
         Accept: 'application/json',
       },
+      signal,
     }
     if (method !== 'GET' && !isEmpty(payload)) {
       opts.headers['Content-Type'] = 'application/json'

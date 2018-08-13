@@ -1,3 +1,7 @@
+## [0.8.0](https://github.com/Kozea/redux-api-unrest/compare/v0.7.4...v0.8.0)
+
+- Use fetch AbortController when available. Polyfill otherwise.
+
 ## [0.7.4](https://github.com/Kozea/redux-api-unrest/compare/v0.7.3...v0.7.4)
 
 - Do not reset after fetch abort to prevent unecessary rendering

@@ -8,6 +8,7 @@ describe('Api-unrest events generation', () => {
       tree: 'forest/tree/:size?/:age?',
     })
     expect(api.events.fruit).toEqual({
+      abort: '@@api-unrest/api/fruit/ABORT',
       cache: '@@api-unrest/api/fruit/CACHE',
       error: '@@api-unrest/api/fruit/ERROR',
       fetch: '@@api-unrest/api/fruit/FETCH',
@@ -15,6 +16,7 @@ describe('Api-unrest events generation', () => {
       reset: '@@api-unrest/api/fruit/RESET',
     })
     expect(api.events.color).toEqual({
+      abort: '@@api-unrest/api/color/ABORT',
       cache: '@@api-unrest/api/color/CACHE',
       error: '@@api-unrest/api/color/ERROR',
       fetch: '@@api-unrest/api/color/FETCH',
@@ -22,6 +24,7 @@ describe('Api-unrest events generation', () => {
       reset: '@@api-unrest/api/color/RESET',
     })
     expect(api.events.tree).toEqual({
+      abort: '@@api-unrest/api/tree/ABORT',
       cache: '@@api-unrest/api/tree/CACHE',
       error: '@@api-unrest/api/tree/ERROR',
       fetch: '@@api-unrest/api/tree/FETCH',
@@ -39,6 +42,7 @@ describe('Api-unrest events generation', () => {
       { prefix: 'root' }
     )
     expect(api.events.fruit).toEqual({
+      abort: '@@api-unrest/root/fruit/ABORT',
       cache: '@@api-unrest/root/fruit/CACHE',
       error: '@@api-unrest/root/fruit/ERROR',
       fetch: '@@api-unrest/root/fruit/FETCH',
@@ -46,6 +50,7 @@ describe('Api-unrest events generation', () => {
       reset: '@@api-unrest/root/fruit/RESET',
     })
     expect(api.events.color).toEqual({
+      abort: '@@api-unrest/root/color/ABORT',
       cache: '@@api-unrest/root/color/CACHE',
       error: '@@api-unrest/root/color/ERROR',
       fetch: '@@api-unrest/root/color/FETCH',
@@ -53,6 +58,7 @@ describe('Api-unrest events generation', () => {
       reset: '@@api-unrest/root/color/RESET',
     })
     expect(api.events.tree).toEqual({
+      abort: '@@api-unrest/root/tree/ABORT',
       cache: '@@api-unrest/root/tree/CACHE',
       error: '@@api-unrest/root/tree/ERROR',
       fetch: '@@api-unrest/root/tree/FETCH',
