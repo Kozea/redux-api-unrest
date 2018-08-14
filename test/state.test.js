@@ -405,4 +405,90 @@ describe('Api unrest update the state when fetching', () => {
     expect(store.getState().color.objects).toEqual([])
     expect(api.fetches.color).toBeUndefined()
   })
+  it('aborts several requests in a row', async () => {
+    const api = new ApiUnrest(
+      {
+        fruit: 'fruit',
+        color: 'base/color/:id?',
+        tree: 'forest/tree/:type?/:age?',
+      },
+      {
+        cache: 100,
+        apiRoot: state => state,
+        fetch: async url => {
+          await timeout(25)
+          return {
+            status: 200,
+            headers: {
+              get: key =>
+                ({
+                  'Content-Type': 'application/json',
+                }[key]),
+            },
+            // eslint-disable-next-line require-await
+            json: async () => ({
+              objects: [url],
+            }),
+          }
+        },
+      }
+    )
+    const actionLog = []
+    const logMiddleware = () => next => action => {
+      actionLog.push(action)
+      return next(action)
+    }
+    const store = createStore(
+      combineReducers(api.reducers),
+      applyMiddleware(thunk, logMiddleware)
+    )
+    const reports = await Promise.all([
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+      store.dispatch(api.actions.color.force.get()),
+    ])
+
+    expect(reports[0].status).toEqual('aborted')
+    expect(reports[1].status).toEqual('aborted')
+    expect(reports[2].status).toEqual('aborted')
+    expect(reports[3].status).toEqual('aborted')
+    expect(reports[4].status).toEqual('aborted')
+    expect(reports[5].status).toEqual('aborted')
+    expect(reports[6].status).toEqual('aborted')
+    expect(reports[7].status).toEqual('aborted')
+    expect(reports[8].status).toEqual('aborted')
+    expect(reports[9].status).toEqual('aborted')
+    expect(reports[10].status).toEqual('success')
+
+    expect(actionLog[0].type).toEqual(api.events.color.fetch)
+    expect(actionLog[1].type).toEqual(api.events.color.fetch)
+    expect(actionLog[2].type).toEqual(api.events.color.fetch)
+    expect(actionLog[3].type).toEqual(api.events.color.fetch)
+    expect(actionLog[4].type).toEqual(api.events.color.fetch)
+    expect(actionLog[5].type).toEqual(api.events.color.fetch)
+    expect(actionLog[6].type).toEqual(api.events.color.fetch)
+    expect(actionLog[7].type).toEqual(api.events.color.fetch)
+    expect(actionLog[8].type).toEqual(api.events.color.fetch)
+    expect(actionLog[9].type).toEqual(api.events.color.fetch)
+    expect(actionLog[10].type).toEqual(api.events.color.fetch)
+    expect(actionLog[11].type).toEqual(api.events.color.abort)
+    expect(actionLog[12].type).toEqual(api.events.color.abort)
+    expect(actionLog[13].type).toEqual(api.events.color.abort)
+    expect(actionLog[14].type).toEqual(api.events.color.abort)
+    expect(actionLog[15].type).toEqual(api.events.color.abort)
+    expect(actionLog[16].type).toEqual(api.events.color.abort)
+    expect(actionLog[17].type).toEqual(api.events.color.abort)
+    expect(actionLog[18].type).toEqual(api.events.color.abort)
+    expect(actionLog[19].type).toEqual(api.events.color.abort)
+    expect(actionLog[20].type).toEqual(api.events.color.abort)
+    expect(actionLog[21].type).toEqual(api.events.color.success)
+  })
 })
