@@ -1,7 +1,5 @@
 import { applyMiddleware, combineReducers, createStore } from 'redux'
 import thunk from 'redux-thunk'
-// eslint-disable-next-line no-unused-vars
-import regeneratorRuntime from 'regenerator-runtime'
 
 import ApiUnrest, { httpError } from '../src'
 import { timeout } from './utils'
@@ -34,8 +32,8 @@ describe('Api unrest can handle JWT', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [{ headers: opts.headers }],
             }),
           }
@@ -77,8 +75,8 @@ describe('Api unrest can handle JWT', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [{ headers: opts.headers }],
             }),
           }
@@ -120,8 +118,8 @@ describe('Api unrest can handle JWT', () => {
                   Authorization: 'JWTTOKEN',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({}),
+
+            json: () => ({}),
           }
         },
       }
@@ -158,8 +156,8 @@ describe('Api unrest can handle JWT', () => {
                   Authorization: 'BADJWTTOKEN',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({}),
+
+            json: () => ({}),
           }
         },
       }

@@ -1,6 +1,3 @@
-// eslint-disable-next-line no-unused-vars
-import regeneratorRuntime from 'regenerator-runtime'
-
 import ApiUnrest from '../src'
 import { timeout } from './utils'
 
@@ -61,8 +58,8 @@ describe('Actions of api-unrest', () => {
             headers: {
               get: key => ({ 'Content-Type': 'application/json' }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [{ url, ...opts }],
               primary_keys: ['key'],
             }),
@@ -122,7 +119,7 @@ describe('Actions of api-unrest', () => {
             offset: 0,
             limit: 50,
           },
-          url: '/base/color?limit=50&offset=0',
+          url: '/base/color?offset=0&limit=50',
         },
       })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
@@ -130,7 +127,7 @@ describe('Actions of api-unrest', () => {
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
       expect(actionHistory[1].objects[0].method).toEqual('GET')
       expect(actionHistory[1].objects[0].url).toEqual(
-        '/base/color?limit=50&offset=0'
+        '/base/color?offset=0&limit=50'
       )
       expect(actionHistory[1].batch).toBeTruthy()
       expect(actionHistory[1].objects[0].headers.Accept).toEqual(
@@ -155,7 +152,7 @@ describe('Actions of api-unrest', () => {
           method: 'GET',
           parameters: { id: 5 },
           payload: { offset: 0, limit: 50 },
-          url: '/base/color/5?limit=50&offset=0',
+          url: '/base/color/5?offset=0&limit=50',
         },
       })
       expect(actionHistory[1].type).toEqual(api.events.color.success)
@@ -163,7 +160,7 @@ describe('Actions of api-unrest', () => {
       expect(actionHistory[1].metadata.primary_keys[0]).toEqual('key')
       expect(actionHistory[1].objects[0].method).toEqual('GET')
       expect(actionHistory[1].objects[0].url).toEqual(
-        '/base/color/5?limit=50&offset=0'
+        '/base/color/5?offset=0&limit=50'
       )
       expect(actionHistory[1].objects[0].headers.Accept).toEqual(
         'application/json'
@@ -288,8 +285,8 @@ describe('Actions of api-unrest', () => {
             headers: {
               get: key => ({ 'Content-Type': 'application/json' }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               message: 'This is the error',
             }),
           }
@@ -340,8 +337,8 @@ describe('Actions of api-unrest', () => {
             headers: {
               get: key => ({ 'Content-Type': 'text/plain' }[key]),
             },
-            // eslint-disable-next-line require-await
-            text: async () => 'This is the text error',
+
+            text: () => 'This is the text error',
           }
         },
       }
@@ -392,8 +389,8 @@ describe('Actions of api-unrest', () => {
             headers: {
               get: key => ({ 'Content-Type': 'application/json' }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               message: 'whatever',
             }),
           }
@@ -442,8 +439,8 @@ describe('Actions of api-unrest', () => {
             headers: {
               get: key => ({ 'Content-Type': 'application/json' }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               occurences: 0,
               objects: [],
             }),
@@ -488,8 +485,8 @@ describe('Actions of api-unrest', () => {
               headers: {
                 get: key => ({ 'Content-Type': 'text/plain' }[key]),
               },
-              // eslint-disable-next-line require-await
-              text: async () => 'This is the text error',
+
+              text: () => 'This is the text error',
             }
           },
           errorHandler: () => false,
@@ -538,8 +535,8 @@ describe('Actions of api-unrest', () => {
               headers: {
                 get: key => ({ 'Content-Type': 'text/plain' }[key]),
               },
-              // eslint-disable-next-line require-await
-              text: async () => 'This is the text error',
+
+              text: () => 'This is the text error',
             }
           },
           errorHandler: (

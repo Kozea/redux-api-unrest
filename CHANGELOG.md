@@ -1,3 +1,9 @@
+### [0.8.2](https://github.com/Kozea/redux-api-unrest/compare/v0.8.1...v0.8.2)
+
+- Add non-json response handling for `fetchHandler`
+- Replace `query-string` by `qs`
+- Use `@babel/plugin-transform-runtime`
+
 ### [0.8.1](https://github.com/Kozea/redux-api-unrest/compare/v0.8.0...v0.8.1)
 
 - Update deps

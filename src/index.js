@@ -1,9 +1,7 @@
 import deepEqual from 'deep-equal'
 import isoFetch from 'isomorphic-fetch'
 import { compile } from 'path-to-regexp'
-import queryString from 'query-string'
-// eslint-disable-next-line no-unused-vars
-import regeneratorRuntime from 'regenerator-runtime'
+import { stringify } from 'qs'
 
 import { AbortController, patchFetchMaybe } from './ponyfill'
 import { isEmpty } from './utils'
@@ -233,9 +231,7 @@ export default class ApiUnrest {
   fetchThunk(endpoint, urlFormatter, urlParameters, method, payload, force) {
     return async (dispatch, getState) => {
       const query =
-        method === 'GET' && !isEmpty(payload)
-          ? `?${queryString.stringify(payload)}`
-          : ''
+        method === 'GET' && !isEmpty(payload) ? `?${stringify(payload)}` : ''
       const url = urlFormatter(urlParameters) + query
       // In case of a get request, add get parameters to parameters
       // (This prevents cache on different url queries: ?offset=0 vs ?offset=10)
@@ -363,6 +359,10 @@ export default class ApiUnrest {
         return json
       }
       throw httpError(response.status, json.message || json.description, json)
+    }
+    if (response.headers.get('Content-Type') !== 'application/json') {
+      // This could happen if used outside of redux context
+      return response.blob()
     }
     return { ...(await response.json()), code: response.status }
   }

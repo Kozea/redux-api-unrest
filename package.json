@@ -37,20 +37,21 @@
   },
   "pre-commit": "lint,test",
   "devDependencies": {
-    "@babel/cli": "^7.0.0",
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
+    "@babel/cli": "^7.2.0",
+    "@babel/core": "^7.2.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-eslint": "^9.0.0",
-    "babel-jest": "^23.4.2",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^23.6.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.5.0",
+    "eslint": "^5.10.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-react": "^7.11.1",
-    "jest": "^23.5.0",
+    "jest": "^23.6.0",
     "pre-commit": "^1.2.2",
-    "redux": "^4.0.0",
+    "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "rimraf": "^2.6.2"
   },
@@ -65,11 +66,10 @@
     }
   },
   "dependencies": {
-    "abortcontroller-polyfill": "^1.1.9",
+    "abortcontroller-polyfill": "^1.2.1",
     "deep-equal": "^1.0.1",
     "isomorphic-fetch": "^2.2.1",
     "path-to-regexp": "^2.4.0",
-    "query-string": "5",
-    "regenerator-runtime": "^0.12.1"
+    "qs": "^6.6.0"
   }
 }

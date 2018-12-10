@@ -1,7 +1,5 @@
 import { applyMiddleware, combineReducers, createStore } from 'redux'
 import thunk from 'redux-thunk'
-// eslint-disable-next-line no-unused-vars
-import regeneratorRuntime from 'regenerator-runtime'
 
 import ApiUnrest from '../src'
 import { timeout } from './utils'
@@ -26,8 +24,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: ['response'],
             }),
           }
@@ -67,8 +65,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               message: 'error',
             }),
           }
@@ -113,8 +111,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: ['data'],
             }),
           }
@@ -157,8 +155,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: ['data'],
             }),
           }
@@ -195,8 +193,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [url],
             }),
           }
@@ -236,8 +234,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [url],
             }),
           }
@@ -287,8 +285,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [url],
             }),
           }
@@ -342,8 +340,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: body ? [JSON.parse(body)] : [],
             }),
           }
@@ -425,8 +423,8 @@ describe('Api unrest update the state when fetching', () => {
                   'Content-Type': 'application/json',
                 }[key]),
             },
-            // eslint-disable-next-line require-await
-            json: async () => ({
+
+            json: () => ({
               objects: [url],
             }),
           }
