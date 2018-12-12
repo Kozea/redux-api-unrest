@@ -231,7 +231,13 @@ export default class ApiUnrest {
   fetchThunk(endpoint, urlFormatter, urlParameters, method, payload, force) {
     return async (dispatch, getState) => {
       const query =
-        method === 'GET' && !isEmpty(payload) ? `?${stringify(payload)}` : ''
+        method === 'GET' && !isEmpty(payload)
+          ? stringify(payload, {
+              addQueryPrefix: true,
+              strictNullHandling: true,
+              indices: false,
+            })
+          : ''
       const url = urlFormatter(urlParameters) + query
       // In case of a get request, add get parameters to parameters
       // (This prevents cache on different url queries: ?offset=0 vs ?offset=10)
