@@ -1,3 +1,7 @@
+### [0.8.4](https://github.com/Kozea/redux-api-unrest/compare/v0.8.3...v0.8.4)
+
+- With sane query stringifying options
+
 ### [0.8.3](https://github.com/Kozea/redux-api-unrest/compare/v0.8.2...v0.8.3)
 
 - With a working runtime
