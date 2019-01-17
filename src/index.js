@@ -35,7 +35,7 @@ export default class ApiUnrest {
     // Set default options
     options = {
       prefix: 'api',
-      rootPath: '',
+      rootPath: () => '',
       cache: null,
       JWTStorage: false,
       errorHandler: () => true,
@@ -85,7 +85,7 @@ export default class ApiUnrest {
   getActions(routes) {
     // For each routes return a map: endpoint -> methods -> thunk -> fetch
     return Object.entries(routes).reduce((actions, [endpoint, path]) => {
-      const urlFormatter = compile(`${this.rootPath}/${path}`)
+      const urlFormatter = compile(`/${path}`)
       actions[endpoint] = methods.reduce(
         (routeActions, method) => {
           routeActions[method] = (payload = {}, force = false) =>
@@ -238,7 +238,7 @@ export default class ApiUnrest {
               indices: false,
             })
           : ''
-      const url = urlFormatter(urlParameters) + query
+      const url = this.rootPath() + urlFormatter(urlParameters) + query
       // In case of a get request, add get parameters to parameters
       // (This prevents cache on different url queries: ?offset=0 vs ?offset=10)
       const parameters =

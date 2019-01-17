@@ -34,7 +34,7 @@ describe('Actions of api-unrest', () => {
         color: 'base/color/:id?',
         tree: 'forest/tree/:type?/:age?',
       },
-      { rootPath: 'http://kozea.fr/api' } // This does not exists
+      { rootPath: () => 'http://kozea.fr/api' } // This does not exists
     )
     const actionHistory = []
     const fakeDispatch = action => actionHistory.push(action)
