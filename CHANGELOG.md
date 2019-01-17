@@ -1,3 +1,8 @@
+## [0.9.0](https://github.com/Kozea/redux-api-unrest/compare/v0.8.4...v0.9.0)
+
+- `rootPath` is now a function for runtime configurations
+- Keep promises on instance for server rendering wait
+
 ### [0.8.4](https://github.com/Kozea/redux-api-unrest/compare/v0.8.3...v0.8.4)
 
 - With sane query stringifying options
