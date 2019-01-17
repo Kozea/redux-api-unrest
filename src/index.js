@@ -62,6 +62,7 @@ export default class ApiUnrest {
 
     this.routes = { ...routes }
     this.fetches = {}
+    this.promises = {}
     this.events = this.getEvents(routes)
     this.actions = this.getActions(routes)
     this.reducers = this.getReducers(routes)
@@ -307,12 +308,13 @@ export default class ApiUnrest {
       }
       try {
         this.fetches[endpoint] = new AbortController()
-        const { objects, ...metadata } = await this.fetchHandler(
+        this.promises[endpoint] = this.fetchHandler(
           url,
           method,
           payload,
           this.fetches[endpoint].signal
         )
+        const { objects, ...metadata } = await this.promises[endpoint]
         dispatch({
           type: this.events[endpoint].success,
           objects,
@@ -338,6 +340,7 @@ export default class ApiUnrest {
         return { status: 'failed', error }
       } finally {
         delete this.fetches[endpoint]
+        delete this.promises[endpoint]
       }
     }
   }
