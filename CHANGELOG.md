@@ -1,3 +1,7 @@
+### [0.9.1](https://github.com/Kozea/redux-api-unrest/compare/v0.9.0...v0.9.1)
+
+- Update deps
+
 ## [0.9.0](https://github.com/Kozea/redux-api-unrest/compare/v0.8.4...v0.9.0)
 
 - `rootPath` is now a function for runtime configurations
