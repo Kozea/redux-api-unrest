@@ -49,3 +49,22 @@ describe('Fetch Handler', () => {
     expect(response).toEqual('the-blob')
   })
 })
+it('supports no content-type answers', async () => {
+  const api = new ApiUnrest(
+    {},
+    {
+      fetch: async () => {
+        await timeout(25)
+        return {
+          status: 200,
+          headers: {
+            get: key => ({}[key]),
+          },
+          blob: () => 'the-blob',
+        }
+      },
+    }
+  )
+  const response = await api.fetchHandler('/url', 'GET')
+  expect(response).toEqual('the-blob')
+})

@@ -358,8 +358,12 @@ export default class ApiUnrest {
       opts.body = JSON.stringify(payload)
     }
     const response = await this._fetch(url, opts)
+    const [contentType] = (response.headers.get('Content-Type') || '').split(
+      ';'
+    )
+
     if (response.status > 300 || response.status < 200) {
-      if (response.headers.get('Content-Type') !== 'application/json') {
+      if (contentType !== 'application/json') {
         const text = await response.text()
         throw httpError(response.status, text)
       }
@@ -369,7 +373,7 @@ export default class ApiUnrest {
       }
       throw httpError(response.status, json.message || json.description, json)
     }
-    if (response.headers.get('Content-Type') !== 'application/json') {
+    if (contentType !== 'application/json') {
       // This could happen if used outside of redux context
       return response.blob()
     }
