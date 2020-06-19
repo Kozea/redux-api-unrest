@@ -1,3 +1,12 @@
+### [0.9.3](https://github.com/Kozea/redux-api-unrest/compare/v0.9.2...v0.9.3)
+
+- Update deps
+- Fix babel-runtime error when version differs from parent project
+
+### [0.9.2](https://github.com/Kozea/redux-api-unrest/compare/v0.9.1...v0.9.2)
+
+- Handle content-type parameters and missing content-type
+
 ### [0.9.1](https://github.com/Kozea/redux-api-unrest/compare/v0.9.0...v0.9.1)
 
 - Update deps
