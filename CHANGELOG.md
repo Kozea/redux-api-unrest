@@ -1,3 +1,8 @@
+### [0.9.4](https://github.com/Kozea/redux-api-unrest/compare/v0.9.3...v0.9.4)
+
+- Remove unused es-lint-react-plugin
+- Revert @babel/runtime to dependencies
+
 ### [0.9.3](https://github.com/Kozea/redux-api-unrest/compare/v0.9.2...v0.9.3)
 
 - Update deps

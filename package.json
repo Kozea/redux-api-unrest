@@ -1,6 +1,6 @@
 {
   "name": "redux-api-unrest",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "A redux reducer for unrest.",
   "main": "lib/index.js",
   "module": "src/index.js",
